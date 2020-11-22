@@ -1,0 +1,104 @@
+from rest_framework.test import APITestCase, APITransactionTestCase
+from controllers.terminal_controller import TerminalController
+import json
+import os
+import time
+
+
+def clean_up(path="/home/adefemigreat/Desktop/DjuixFiles/"):
+    # some cleanup
+    TerminalController.delete_path(path+"test_project")
+    TerminalController.delete_path(path+"test_project_env")
+    time.sleep(1)
+
+
+class TestWriteToModel(APITransactionTestCase):
+    project_endpoint = "/project-controls/project"
+    app_endpoint = "/project-controls/app"
+    model_endpoint = "/app-controls/model"
+
+    def setUp(self):
+        project_data = {
+            "name": "test_project",
+            "description": "this is a test project",
+            "project_path": "/home/adefemigreat/Desktop/DjuixFiles/"
+        }
+
+        response = self.client.post(self.project_endpoint, data=json.dumps(
+            project_data), content_type='application/json')
+        res = response.json()
+
+        app_data = {
+            "name": "test_app",
+            "description": "this is a test app",
+            "project_id": res["id"]
+        }
+
+        response = self.client.post(self.app_endpoint, data=json.dumps(
+            app_data), content_type='application/json')
+        res = response.json()
+
+        self.app_id = res["id"]
+
+    def test_create_model(self):
+        model_data = {
+            "name": "test_model",
+            "app_id": self.app_id,
+            "fields": [
+                {
+                    "name": "test_field_1",
+                    "field_type": "CharField",
+                },
+                {
+                    "name": "test_field_2",
+                    "field_type": "TextField",
+                    "is_blank": True,
+                    "is_null": True
+                },
+                {
+                    "name": "created_at",
+                    "field_type": "DateTimeField",
+                    "is_created_at": True
+                },
+                {
+                    "name": "updated_at",
+                    "field_type": "DateTimeField",
+                },
+            ]
+        }
+
+        response = self.client.post(self.model_endpoint, data=json.dumps(
+            model_data), content_type='application/json')
+        res = response.json()
+
+        model_data = {
+            "name": "test_model_2",
+            "app_id": self.app_id,
+            "fields": [
+                {
+                    "name": "test_field_1",
+                    "field_type": "CharField",
+                },
+                {
+                    "name": "test_field_2",
+                    "field_type": "TextField",
+                    "is_blank": True,
+                    "is_null": True
+                },
+                {
+                    "name": "created_at",
+                    "field_type": "DateTimeField",
+                    "is_created_at": True
+                },
+                {
+                    "name": "updated_at",
+                    "field_type": "DateTimeField",
+                },
+            ]
+        }
+
+        response = self.client.post(self.model_endpoint, data=json.dumps(
+            model_data), content_type='application/json')
+        res = response.json()
+
+        print(res)
