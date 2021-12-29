@@ -8,11 +8,12 @@ import shutil
 class TerminalController:
 
     def __init__(self, path, project_name):
-        self.path = path
+        self.path = path 
         self.project_name = project_name
 
     def create_project(self):
         self.check_if_path_exist()
+        self.create_project_folder()
         self.create_env()
         self.install_packages()
 
@@ -27,10 +28,38 @@ class TerminalController:
             raise Exception(err.decode())
 
         return True
+    
+    def create_project_folder(self):
+        project_name = self.get_formatted_name()
+        
+        if os.path.exists(self.get_project_full_path()):
+            command_template = "rm -r {}"
+            command = shlex.split(command_template.format(project_name))
+            p = subprocess.Popen(command, cwd=self.path,
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            p.wait()
+            [_, err] = p.communicate()
+            if err:
+                raise Exception(err.decode())
+        
+        p = subprocess.Popen(["mkdir", project_name], cwd=self.path,
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        p.wait()
+        [_, err] = p.communicate()
+        if err:
+            raise Exception(err.decode())
+        
+        self.path = f"{self.path}/{project_name}"
+        
+        print("created project folder")
+        return True
 
     def check_if_path_exist(self):
         if not os.path.exists(self.path):
             raise Exception("path do not exist")
+        
+        print("path exist")
+        return True
 
     def get_formatted_name(self, name=None):
         if name:
@@ -39,27 +68,24 @@ class TerminalController:
 
     def get_env(self):
         return self.get_formatted_name() + "_env"
+    
+    def get_project_full_path(self):
+        return f"{self.path}/{self.get_formatted_name()}"
 
     def get_env_full_path(self):
-        return self.path + self.get_env() + "/bin/activate"
+        path = f"{self.path}/{self.get_env()}/Scripts/activate"
+        print(path)
+        return path
 
     def create_env(self):
-        if os.path.exists(self.get_env_full_path()):
-            command_template = "rm -r {}"
-            command = shlex.split(command_template.format(self.get_env()))
-            p = subprocess.Popen(command, cwd=self.path,
-                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            p.wait()
-            [_, err] = p.communicate()
-            if err:
-                raise Exception(err.decode())
-
         p = subprocess.Popen(["virtualenv", self.get_env()], cwd=self.path,
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         p.wait()
         [_, err] = p.communicate()
         if err:
             raise Exception(err.decode())
+        
+        print("created virtual env")
         return True
 
     def install_packages(self):
@@ -69,12 +95,13 @@ class TerminalController:
         command_template = '/bin/bash -c "source {} && pip install {}"'
         command = shlex.split(command_template.format(
             self.get_env_full_path(), package_string_list))
-        p = subprocess.Popen(
-            command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         p.wait()
         [_, err] = p.communicate()
         if err:
             raise Exception(err.decode())
+        
+        print("installed packages")
         return True
 
     def create_app(self, app_name):
