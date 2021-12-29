@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+
+  postgres:
+    container_name: djuix_postgres_db
+    image: postgres
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      PGDATA: /data/djuix_postgres_db
+    volumes:
+       - djuix_postgres_db:/data/djuix_postgres_db
+    ports:
+      - "${DB_PORT}:5432"
+    networks:
+      - djuix_net
+    restart: unless-stopped
+
+
+networks:
+  djuix_net:
+    driver: bridge
+
+volumes:
+    djuix_postgres_db:

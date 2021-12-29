@@ -23,7 +23,7 @@ class SettingValue(models.Model):
     value = models.TextField()
 
     def __str__(self):
-        return f"{project.name} - {self.name}"
+        return f"{self.project.name} - {self.name}"
 
     class Meta:
         ordering = ("name", )
@@ -35,7 +35,7 @@ class SettingHeader(models.Model):
     value = models.TextField(unique=True)
 
     def __str__(self):
-        return f"{project.name} - {self.value}"
+        return f"{self.project.name} - {self.value}"
 
     class Meta:
         ordering = ("project__name", )
