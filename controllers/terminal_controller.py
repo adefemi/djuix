@@ -17,10 +17,8 @@ class TerminalController:
         self.create_env()
         self.install_packages()
 
-        command_template = '/bin/bash -c "source {} && django-admin startproject {}"'
-        command = shlex.split(command_template.format(
-            self.get_env_full_path(), self.get_formatted_name()))
-        p = subprocess.Popen(command, cwd=self.path,
+        command_template = f"{self.get_env_full_path()} && django-admin startproject {self.get_formatted_name()}"
+        p = subprocess.Popen(command_template, cwd=self.path,
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         p.wait()
         [_, err] = p.communicate()
@@ -30,7 +28,7 @@ class TerminalController:
         return True
     
     def create_project_folder(self):
-        project_name = self.get_formatted_name()
+        project_name = self.get_formatted_name() + "_main"
         
         if os.path.exists(self.get_project_full_path()):
             command_template = "rm -r {}"
@@ -73,8 +71,7 @@ class TerminalController:
         return f"{self.path}/{self.get_formatted_name()}"
 
     def get_env_full_path(self):
-        path = f"{self.path}/{self.get_env()}/Scripts/activate"
-        print(path)
+        path = f"{self.path}/{self.get_env()}/Scripts/activate.bat"
         return path
 
     def create_env(self):
@@ -92,10 +89,8 @@ class TerminalController:
         package_string_list = ""
         for package in PackageList.get_packages():
             package_string_list += package + " "
-        command_template = '/bin/bash -c "source {} && pip install {}"'
-        command = shlex.split(command_template.format(
-            self.get_env_full_path(), package_string_list))
-        p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        command_template = f"{self.get_env_full_path()} && pip install {package_string_list}"
+        p = subprocess.Popen(command_template, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         p.wait()
         [_, err] = p.communicate()
         if err:

@@ -164,7 +164,7 @@ class WriteToModel:
 
 def create_settings(project_name, project_id):
     # add os import for settings
-    SettingHeader.objects.create(value="import os", project_id=project_id)
+    SettingHeader.objects.update_or_create(value="import os", project_id=project_id)
 
     settings_contents = [
         {

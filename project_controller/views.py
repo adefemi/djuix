@@ -14,12 +14,18 @@ class ProjectView(ModelViewSet):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        
+        project_path = serializer.data["project_path"]
+        active_project = None
 
-        terminal_controller = TerminalController(
-            serializer.data["project_path"], serializer.data["name"])
+        terminal_controller = TerminalController(project_path, serializer.data["name"])
 
         try:
             terminal_controller.create_project()
+            project_path = terminal_controller.path
+            active_project = self.queryset.get(id=serializer.data["id"])
+            active_project.project_path = project_path
+            active_project.save()
             print("project created")
         except Exception as e:
             self.queryset.filter(id=serializer.data["id"]).delete()
@@ -35,13 +41,13 @@ class ProjectView(ModelViewSet):
 
         try:
             functions.update_settings(
-                f"{serializer.data['project_path']}{serializer.data['name']}/{serializer.data['name']}/", serializer.data["id"])
+                f"{project_path}/{serializer.data['name']}/{serializer.data['name']}/", serializer.data["id"])
             print("settings updated")
         except Exception as e:
             self.queryset.filter(id=serializer.data["id"]).delete()
             raise Exception(e)
 
-        return Response(serializer.data, status=201)
+        return Response(self.serializer_class(active_project).data, status=201)
 
 
 class AppView(ModelViewSet):

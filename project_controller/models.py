@@ -19,7 +19,7 @@ class Project(models.Model):
 class SettingValue(models.Model):
     project = models.ForeignKey(
         Project, related_name="project_setting_value", on_delete=models.CASCADE)
-    name = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=50)
     value = models.TextField()
 
     def __str__(self):
@@ -32,7 +32,7 @@ class SettingValue(models.Model):
 class SettingHeader(models.Model):
     project = models.ForeignKey(
         Project, related_name="project_setting_header", on_delete=models.CASCADE)
-    value = models.TextField(unique=True)
+    value = models.TextField()
 
     def __str__(self):
         return f"{self.project.name} - {self.value}"
