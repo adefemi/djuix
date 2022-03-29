@@ -10,7 +10,7 @@ class Project(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.name
+        return f"{self.name} - {self.pk}"
 
     class Meta:
         ordering = ("-created_at", )
@@ -44,14 +44,13 @@ class SettingHeader(models.Model):
 class App(models.Model):
     name = models.CharField(max_length=50, unique=True)
     description = models.TextField(null=True, blank=True)
-    is_auth = models.BooleanField(default=False)
     project = models.ForeignKey(
         Project, related_name="project_apps", on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.project.name} - {self.name}"
+        return f"{self.project.name} - {self.name} - {self.pk}"
 
     class Meta:
         ordering = ("name", )

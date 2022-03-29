@@ -1,6 +1,7 @@
 from project_controller.models import SettingHeader, SettingValue
 from .helper import Helper
 from controllers.directory_controller import DirectoryManager
+from abstractions.enums import Enums
 
 
 # update settings file
@@ -168,23 +169,23 @@ def create_settings(project_name, project_id):
 
     settings_contents = [
         {
-            "name": "BASE_DIR",
+            "name": Enums.BASE_DIR,
             "value": 'os.path.dirname(os.path.dirname(os.path.abspath(__file__)))'
         },
         {
-            "name": "SECRET_KEY",
+            "name": Enums.SECRET_KEY,
             "value": f"'{Helper.generate_random_string(30)}'"
         },
         {
-            "name": "DEBUG",
+            "name": Enums.DEBUG,
             "value": "True"
         },
         {
-            "name": "ALLOWED_HOSTS",
+            "name": Enums.ALLOWED_HOSTS,
             "value": "['*']"
         },
         {
-            "name": "INSTALLED_APPS",
+            "name": Enums.INSTALLED_APPS,
             "value": """[
     'django.contrib.admin',
     'django.contrib.auth',
@@ -197,7 +198,7 @@ def create_settings(project_name, project_id):
 ]"""
         },
         {
-            "name": "MIDDLEWARE",
+            "name": Enums.MIDDLEWARE,
             "value": """[
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -210,15 +211,15 @@ def create_settings(project_name, project_id):
 ]"""
         },
         {
-            "name": "ROOT_URLCONF",
+            "name": Enums.ROOT_URLCONF,
             "value": f"'{project_name}.urls'"
         },
         {
-            "name": "WSGI_APPLICATION",
+            "name": Enums.WSGI_APPLICATION,
             "value": f"'{project_name}.wsgi.application'"
         },
         {
-            "name": "TEMPLATES",
+            "name": Enums.TEMPLATES,
             "value": """[
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -236,7 +237,7 @@ def create_settings(project_name, project_id):
 ]"""
         },
         {
-            "name": "DATABASES",
+            "name": Enums.DATABASES,
             "value": """{
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -245,7 +246,7 @@ def create_settings(project_name, project_id):
 }"""
         },
         {
-            "name": "AUTH_PASSWORD_VALIDATORS",
+            "name": Enums.AUTH_PASSWORD_VALIDATORS,
             "value": """[
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -262,31 +263,31 @@ def create_settings(project_name, project_id):
 ]"""
         },
         {
-            "name": "LANGUAGE_CODE",
+            "name": Enums.LANGUAGE_CODE,
             "value": "'en-us'"
         },
         {
-            "name": "TIME_ZONE",
+            "name": Enums.TIME_ZONE,
             "value": "'UTC'"
         },
         {
-            "name": "USE_I18N",
+            "name": Enums.USE_I18N,
             "value": 'True'
         },
         {
-            "name": "USE_L10N",
+            "name": Enums.USE_L10N,
             "value": 'True'
         },
         {
-            "name": "USE_TZ",
+            "name": Enums.USE_TZ,
             "value": 'True'
         },
         {
-            "name": "CORS_ORIGIN_ALLOW_ALL",
+            "name": Enums.CORS_ORIGIN_ALLOW_ALL,
             "value": 'True'
         },
         {
-            "name": "CORS_ALLOW_HEADERS",
+            "name": Enums.CORS_ALLOW_HEADERS,
             "value": """(
     'x-requested-with',
     'content-type',
@@ -300,15 +301,15 @@ def create_settings(project_name, project_id):
 )"""
         },
         {
-            "name": "CORS_ALLOW_CREDENTIALS",
+            "name": Enums.CORS_ALLOW_CREDENTIALS,
             "value": "False"
         },
         {
-            "name": "CORS_ALLOW_METHODS",
+            "name": Enums.CORS_ALLOW_METHODS,
             "value": "('GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS')"
         },
         {
-            "name": "STATIC_URL",
+            "name": Enums.STATIC_URL,
             "value": "'/static/'"
         },
     ]

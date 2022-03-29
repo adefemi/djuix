@@ -3,6 +3,7 @@ from .models import Project, App
 
 
 class ProjectSerializer(serializers.ModelSerializer):
+    delete_if_project_exist = serializers.BooleanField(write_only=True, default=False)
 
     class Meta:
         model = Project
