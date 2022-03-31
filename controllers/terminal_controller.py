@@ -2,7 +2,7 @@ import os
 import subprocess
 import shlex
 from abstractions.packages import PackageList
-import shutil
+from .directory_controller import DirectoryManager
 
 
 class TerminalController:
@@ -17,7 +17,7 @@ class TerminalController:
         return f"{self.path}/{formatted_project_name}/{formatted_project_name}/"
 
     def create_project(self):
-        self.check_if_path_exist()
+        DirectoryManager.check_if_path_exist(self.path)
         self.check_if_project_already_exist()
         self.create_project_folder()
         self.create_env()
@@ -65,16 +65,9 @@ class TerminalController:
         project_path = self.path + "/" + self.define_project_standard_name()
         if os.path.exists(project_path):
             if self.delete_if_project_exist:
-                self.delete_path(project_path)
+                DirectoryManager.delete_directory(project_path)
             else:
                 raise Exception("A project with the provided path already exist")
-        return True
-
-    def check_if_path_exist(self):
-        if not os.path.exists(self.path):
-            raise Exception("path do not exist")
-        
-        print("path exist")
         return True
 
     def get_formatted_name(self, name=None):
@@ -153,21 +146,16 @@ class TerminalController:
         return True
 
     def run_migration(self):
-        command_template = '/bin/bash -c "source {} && export {} && python manage.py makemigrations && python manage.py migrate"'
-        export_settings = f"DJANGO_SETTINGS_MODULE={self.get_formatted_name()}.settings"
+        settings_path = f"{self.get_formatted_name()}.settings";
+        command_template = "{} && SET {}&& python manage.py makemigrations && python manage.py migrate"
+        export_settings = f"DJANGO_SETTINGS_MODULE={settings_path}"
+
         command = shlex.split(command_template.format(
             self.get_env_full_path(), export_settings))
-        p = subprocess.Popen(command, cwd=self.path + self.get_formatted_name(),
+        p = subprocess.Popen(command, cwd=self.get_project_full_path(),
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        p.wait()
+
         [_, err] = p.communicate()
         if err:
             raise Exception(err.decode())
         return True
-
-    @staticmethod
-    def delete_path(path):
-        try:
-            shutil.rmtree(path)
-        except OSError as e:
-            raise Exception(e)

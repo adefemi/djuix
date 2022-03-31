@@ -45,13 +45,8 @@ class ModelInfoView(ModelViewSet):
         # create model
         serializer = self.serializer_class(data=data)
         serializer.is_valid(raise_exception=True)
-
-        # ensure that model name is unique to app
-        if self.queryset.filter(app_id=data["app_id"], name__iexact=data["name"]):
-            raise Exception(
-                "A model with this name already exist for this App")
-
         serializer.save()
+        
         model_id = serializer.data["id"]
         active_model = self.queryset.get(id=model_id)
 
@@ -75,8 +70,12 @@ class ModelInfoView(ModelViewSet):
             raise Exception("There was an issue creating")
 
         # run migration
-        TerminalController(active_model.app.project.project_path,
+        try:
+            TerminalController(active_model.app.project.project_path,
                            active_model.app.project.name).run_migration()
+        except Exception as e:
+            active_model.delete()
+            Helper.handleException(e)
 
         return Response(self.serializer_class(active_model).data, status=201)
 

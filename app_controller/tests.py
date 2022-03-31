@@ -1,5 +1,6 @@
 from rest_framework.test import APITestCase, APITransactionTestCase
 from controllers.terminal_controller import TerminalController
+from controllers.directory_controller import DirectoryManager
 import json
 import os
 import time
@@ -7,8 +8,8 @@ import time
 
 def clean_up(path="/home/adefemigreat/Desktop/DjuixFiles/"):
     # some cleanup
-    TerminalController.delete_path(path+"test_project")
-    TerminalController.delete_path(path+"test_project_env")
+    DirectoryManager.delete_directory(path+"test_project")
+    DirectoryManager.delete_directory(path+"test_project_env")
     time.sleep(1)
 
 

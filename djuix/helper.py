@@ -22,3 +22,8 @@ class Helper:
     @staticmethod
     def camelToSnake(word):
         return re.sub('(?!^)([A-Z]+)', r'_\1', word).lower()
+    
+    @staticmethod
+    def handleException(excep):
+        print(excep)
+        raise Exception(excep) 

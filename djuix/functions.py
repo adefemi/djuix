@@ -117,7 +117,7 @@ class WriteToModel:
             content_data += "\n\n"
 
         try:
-            model_path = f"{self.app_data.project.project_path}{self.app_data.project.name}/{self.app_data.name}/"
+            model_path = f"{self.app_data.project.project_path}/{self.app_data.project.name}/{self.app_data.name}/"
             directory_manager = DirectoryManager(model_path)
             file_data = directory_manager.create_file("models.py")
             directory_manager.write_file(file_data, content_data)

@@ -1,3 +1,4 @@
+from enum import unique
 from django.db import models
 from project_controller.models import App
 
@@ -12,6 +13,9 @@ class ModelInfo(models.Model):
     name = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ('app_id', 'name')
 
     def __str__(self):
         return f"{self.app.name} - {self.name}"
