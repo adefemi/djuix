@@ -85,6 +85,8 @@ class AppView(ModelViewSet):
             self.queryset.filter(id=serializer.data["id"]).delete()
             raise Exception(e)
         
+        print("got here")
+        
         # update setting installed app with new app
         # get project settings installed app values
         installed_apps = SettingValue.objects.get(project_id=project["id"], name=Enums.INSTALLED_APPS)
@@ -94,6 +96,8 @@ class AppView(ModelViewSet):
 ]""".format(reduce(lambda a, b:f"{a}'{b}',\n    ", installed_apps_array, ""), serializer.data["name"])
         installed_apps.value = new_installed_app
         installed_apps.save()
+        
+        print("got here")
         
         try:
             functions.update_settings(

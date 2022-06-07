@@ -2,12 +2,14 @@ import os
 import subprocess
 import shlex
 from abstractions.packages import PackageList
+from controllers.command_template import CommandTemplate, OsType
 from .directory_controller import DirectoryManager
 
 
-class TerminalController:
+class TerminalController(CommandTemplate):
 
     def __init__(self, path, project_name, delete_if_project_exist=False):
+        super().__init__(OsType.mac)
         self.path = self.transform_path(path) 
         self.project_name = project_name
         self.delete_if_project_exist = delete_if_project_exist
@@ -22,10 +24,11 @@ class TerminalController:
         self.create_project_folder()
         self.create_env()
         self.install_packages()
+        
+        command = 'django-admin startproject'
 
-        command_template = f"{self.get_env_full_path()} && django-admin startproject {self.get_formatted_name()}"
-        p = subprocess.Popen(command_template, cwd=self.path,
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        command_template = self.get_access_template(command, self.get_formatted_name())
+        p = subprocess.Popen(command_template, cwd=self.path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         p.wait()
         [_, err] = p.communicate()
         if err:
@@ -70,11 +73,6 @@ class TerminalController:
                 raise Exception("A project with the provided path already exist")
         return True
 
-    def get_formatted_name(self, name=None):
-        if name:
-            return name.lower().replace(" ", "_")
-        return self.project_name.lower().replace(" ", "_")
-
     def get_env(self):
         return self.get_formatted_name() + "_env"
     
@@ -84,9 +82,6 @@ class TerminalController:
     @staticmethod
     def transform_path(path):
         return path.replace("\\", "/")
-
-    def get_env_full_path(self):
-        return f"{self.path}/{self.get_env()}/Scripts/activate.bat"
 
     def create_env(self):
         p = subprocess.Popen(["virtualenv", self.get_env()], cwd=self.path,
@@ -101,17 +96,23 @@ class TerminalController:
 
     def install_packages(self):
         # upgrade pip first
-        command_template = f"{self.get_env_full_path()} && python.exe -m pip install --upgrade pip"
+        
+        command = f"{self.get_python_command()} -m pip install --upgrade pip"
+        command_template = self.get_access_template(command)
+
         p = subprocess.Popen(command_template, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         p.wait()
         [_, err] = p.communicate()
         if err:
             raise Exception(err.decode())
+        print("updated pip")
         
         package_string_list = ""
         for package in PackageList.get_packages():
             package_string_list += package + " "
-        command_template = f"{self.get_env_full_path()} && pip install {package_string_list}"
+            
+        command = "pip install"
+        command_template = self.get_access_template(command, package_string_list)
         p = subprocess.Popen(command_template, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         p.wait()
         [_, err] = p.communicate()
@@ -122,11 +123,10 @@ class TerminalController:
         return True
 
     def create_app(self, app_name):
-        command_template = "{} && python manage.py startapp {}"
-        command = shlex.split(command_template.format(
-            self.get_env_full_path(), self.get_formatted_name(app_name)))
+        command = "python manage.py startapp"
+        command_template = self.get_access_template(command, self.get_formatted_name(app_name))
 
-        p = subprocess.Popen(command, cwd=self.get_project_full_path(),
+        p = subprocess.Popen(command_template, cwd=self.get_project_full_path(),
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         p.wait()
@@ -137,7 +137,7 @@ class TerminalController:
 
         # create serializer.py and url.py files
         from .directory_controller import DirectoryManager
-        dir_manager = DirectoryManager(f"{self.path}/{self.project_name}/{app_name}/")
+        dir_manager = DirectoryManager(f"{self.path}/{self.project_name}/{self.get_formatted_name(app_name)}/")
 
         dir_manager.create_file("serializers.py", "a")
         dir_manager.create_file("urls.py", "a")
