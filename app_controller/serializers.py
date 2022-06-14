@@ -1,4 +1,4 @@
-from .models import ModelInfo, ModelField, SerializerField, SerializerInfo
+from .models import ModelInfo, SerializerInfo, ViewsInfo, UrlInfo
 from rest_framework import serializers
 
 
@@ -11,18 +11,7 @@ class ModelInfoSerializer(serializers.ModelSerializer):
         model = ModelInfo
 
 
-class ModelFieldSerializer(serializers.ModelSerializer):
-    model_main = serializers.CharField(read_only=True)
-    model_main_id = serializers.IntegerField(write_only=True)
-
-    class Meta:
-        fields = "__all__"
-        model = ModelField
-
-
 class SerializerInfoSerializer(serializers.ModelSerializer):
-    app = serializers.CharField(read_only=True)
-    app_id = serializers.IntegerField(write_only=True)
     model_relation = serializers.CharField(read_only=True)
     model_relation_id = serializers.CharField(write_only=True, required=False)
 
@@ -31,10 +20,19 @@ class SerializerInfoSerializer(serializers.ModelSerializer):
         model = SerializerInfo
 
 
-class SerializerFieldSerializer(serializers.ModelSerializer):
-    serializer_main = serializers.CharField(read_only=True)
-    serializer_main_id = serializers.IntegerField(write_only=True)
+class ViewInfoSerializer(serializers.ModelSerializer):
+    serializer_relation = serializers.CharField(read_only=True)
+    serializer_relation_id = serializers.CharField(write_only=True, required=False)
 
     class Meta:
         fields = "__all__"
-        model = SerializerField
+        model = ViewsInfo
+
+
+class UrlInfoSerializer(serializers.ModelSerializer):
+    view_relation = serializers.CharField(read_only=True)
+    view_relation_id = serializers.CharField(write_only=True, required=False)
+
+    class Meta:
+        fields = "__all__"
+        model = UrlInfo

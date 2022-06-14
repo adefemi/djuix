@@ -1,7 +1,7 @@
 from project_controller.models import SettingHeader, SettingValue
 from .helper import Helper
 from controllers.directory_controller import DirectoryManager
-from abstractions.enums import Enums
+from abstractions.enums import Enums, ModelFieldTypes
 
 
 # update settings file
@@ -84,85 +84,9 @@ class WriteToSerializer:
             content_data += "read_only=True, "
         if field_data.is_many:
             content_data += "many=True, "
-        return content_data
+        return content_data      
 
-
-class WriteToModel:
-
-    def __init__(self, app_data, models_data):
-        self.app_data = app_data
-        self.models_data = models_data
-
-    def write_model(self):
-        # define the base structure
-        content_data = "from django.db import models\n\n\n"
-
-        for model_data in self.models_data:
-            content_data += f"class {model_data.name}(models.Model):\n"
-            fields = model_data.model_fields.all()
-
-            for field_data in fields:
-
-                content_data += f"\t{field_data.name} = models.{field_data.field_type}("
-                content_data = self.check_general(field_data, content_data)
-                if field_data.field_type == "CharField":
-                    content_data = self.check_char(field_data, content_data)
-                elif field_data.is_related:
-                    content_data = self.check_related(field_data, content_data)
-                elif field_data.field_type == "DateTimeField":
-                    content_data = self.check_date(field_data, content_data)
-
-                content_data = content_data[:-2]
-                content_data += ")\n"
-            content_data += "\n\n"
-
-        try:
-            model_path = f"{self.app_data.project.project_path}/{self.app_data.project.name}/{self.app_data.name}/"
-            directory_manager = DirectoryManager(model_path)
-            file_data = directory_manager.create_file("models.py")
-            directory_manager.write_file(file_data, content_data)
-            return True
-        except Exception as e:
-            print(e)
-            return False
-
-    @staticmethod
-    def check_general(field_data, content_data):
-        if field_data.is_null:
-            content_data += "null=True, "
-        if field_data.is_blank:
-            content_data += "blank=True, "
-        if field_data.is_unique:
-            content_data += "unique=True, "
-        if field_data.default_value:
-            content_data += f"default={field_data.default_value}, "
-        if field_data.helper_text:
-            content_data += f"help_text={field_data.helper_text}, "
-        return content_data
-
-    @staticmethod
-    def check_char(field_data, content_data):
-        if field_data.max_length:
-            content_data += f"max_length={field_data.max_length}, "
-        else:
-            content_data += "max_length=255, "
-        return content_data
-
-    @staticmethod
-    def check_related(field_data, content_data):
-        content_data += f"'{field_data.related_model_name}', "
-        content_data += f"related_name='{field_data.related_name_main}', "
-        return content_data
-
-    @staticmethod
-    def check_date(field_data, content_data):
-        if field_data.is_created_at:
-            content_data += f"auto_now_add=True, "
-        else:
-            content_data += f"auto_now=True, "
-        return content_data
-
-
+    
 def create_settings(project_name, project_id):
     # add os import for settings
     SettingHeader.objects.update_or_create(value="import os", project_id=project_id)

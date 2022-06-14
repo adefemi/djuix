@@ -1,13 +1,13 @@
 from rest_framework.viewsets import ModelViewSet
+
+from project_controller.sevices import process_app_creation
 from .serializers import Project, ProjectSerializer, App, AppSerializer
-from .models import SettingValue
 from controllers.terminal_controller import TerminalController
 from rest_framework.response import Response
 from djuix import functions
 from djuix.helper import Helper
-from abstractions.enums import Enums
-from ast import literal_eval
-from functools import reduce
+
+from project_templates.blog.process import CreateBlogTemplate
 
 
 class ProjectView(ModelViewSet):
@@ -24,6 +24,7 @@ class ProjectView(ModelViewSet):
         serializer = self.serializer_class(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.validated_data.pop("delete_if_project_exist", None)
+        template = serializer.validated_data.pop("template", None)
         serializer.save()
         
         project_path = serializer.data["project_path"]
@@ -60,6 +61,10 @@ class ProjectView(ModelViewSet):
             self.queryset.filter(id=serializer.data["id"]).delete()
             print(e)
             raise Exception(e)
+        
+        if template == "blog":
+            print("start creating blog template")
+            CreateBlogTemplate(active_project)
 
         return Response(self.serializer_class(active_project).data, status=201)
 
@@ -69,44 +74,7 @@ class AppView(ModelViewSet):
     queryset = App.objects.prefetch_related("project")
 
     def create(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        
-        project = serializer.data["project"]
-        
+        app = process_app_creation(request.data)
 
-        terminal_controller = TerminalController(
-            project["project_path"], project["name"])
-
-        try:
-            terminal_controller.create_app(serializer.data["name"])
-        except Exception as e:
-            self.queryset.filter(id=serializer.data["id"]).delete()
-            raise Exception(e)
-        
-        print("got here")
-        
-        # update setting installed app with new app
-        # get project settings installed app values
-        installed_apps = SettingValue.objects.get(project_id=project["id"], name=Enums.INSTALLED_APPS)
-        installed_apps_array = literal_eval(installed_apps.value)
-        new_installed_app = """[
-    {}'{}',
-]""".format(reduce(lambda a, b:f"{a}'{b}',\n    ", installed_apps_array, ""), serializer.data["name"])
-        installed_apps.value = new_installed_app
-        installed_apps.save()
-        
-        print("got here")
-        
-        try:
-            functions.update_settings(
-                terminal_controller.get_settings_path(), project["id"])
-            print("settings updated")
-        except Exception as e:
-            self.queryset.filter(id=serializer.data["id"]).delete()
-            print(e)
-            raise Exception(e)
-  
-
-        return Response(serializer.data, status="201")
+        return Response(self.get_serializer(app).data, status="201")
+    

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ModelField, ModelInfo
+from .models import ModelInfo, SerializerInfo, ViewsInfo, UrlInfo
 
 
-admin.site.register((ModelField, ModelInfo))
+admin.site.register((ModelInfo, SerializerInfo, ViewsInfo, UrlInfo))
