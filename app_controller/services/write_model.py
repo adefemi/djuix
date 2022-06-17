@@ -1,28 +1,26 @@
 from abstractions.enums import ModelFieldTypes
-from controllers.directory_controller import DirectoryManager
+from app_controller.services.writer_main import WriterMain
 
-class WriteToModel:
+class WriteToModel(WriterMain):
     models = []
-    app = None
-    content_data = ""
     has_save_method = False
     has_slug = False
     slug_data = {}
 
     def __init__(self, app, models):
-        self.app = app
+        super().__init__(app)
         self.models = models
         self.write_model()
+        self.write_admin()
 
     def write_model(self):
         # define the base structure
         print("writing model")
         self.content_data = "from django.db import models\n"
         self.check_for_import()
-        self.content_data += "\n\n"
 
         for model in self.models:
-            self.content_data += f"class {model.name}(models.Model):\n"
+            self.content_data += f"\n\nclass {model.name}(models.Model):\n"
             field_properties = model.field_properties
             fields = field_properties["fields"]
             self.has_slug = False
@@ -59,43 +57,48 @@ class WriteToModel:
                 self.format_has_updated_date()
                 
             self.content_data += "\n"
-            should_double_next_line = False
             
             print("writing extra data")
                 
             
             meta = field_properties.get("meta", None)
             if meta:
-                should_double_next_line = True
                 self.format_meta(meta)
                 
             string_rep = field_properties.get("string_representation", None)
             if string_rep:
-                should_double_next_line = True
                 self.format_string_representation(string_rep)
                 
             if self.has_slug:
-                should_double_next_line = True
                 self.format_slug()
                 
             if self.has_save_method:
                 self.finalize_save()
                 
-            if should_double_next_line:
-                self.content_data += "\n\n"
-                
 
-        try:
-            print("writing to model file")
-            model_path = f"{self.app.project.project_path}/{self.app.project.name}/{self.app.name}/"
-            directory_manager = DirectoryManager(model_path)
-            file_data = directory_manager.create_file("models.py")
-            directory_manager.write_file(file_data, self.content_data)
-            return True
-        except Exception as e:
-            print(e)
-            return False
+        self.write_to_file('model')
         
+    def write_admin(self):
+        self.content_data = "from django.contrib import admin\n"
+        import_obj = {}
+        
+        for model in self.models:
+            key = ".models"
+            
+            if not import_obj.get(key, None):
+                import_obj[key] = []
+                
+            if model.name not in import_obj[key]:
+                import_obj[key].append(model.name)
+                
+        self.format_import(import_obj)
+        string_attr = ", ".join(x.name for x in self.models)
+        self.content_data += "\n\nadmin.site.register(\n"
+        self.content_data += f"\t({string_attr})\n"
+        self.content_data += ")\n"
+        
+        self.write_to_file(None, "admin.py")
+    
     def format_meta(self, meta_data):
         print("writing meta data")
         self.content_data += f"\tclass Meta:\n"

@@ -65,11 +65,10 @@ class BlogControl(AppCreation):
                     },
                     {
                         "name": "author",
-                        "field_type": ModelFieldTypes.ForeignKey,
+                        "field_type": ModelFieldTypes.CharField,
                         "field_properties": {
-                            "related_model_name": "CustomUser",
-                            "related_name": "'blog_author'",
-                            "on_delete": "models.CASCADE"
+                            "max_length": "255",
+                            "default": "'Annoymous'"
                         }
                     },
                     {
@@ -152,24 +151,24 @@ class BlogControl(AppCreation):
                             "read_only": "True",
                         }
                     },
-                    {
-                        "name": "author",
-                        "field_type": "CustomUserSerializer",
-                        "external_serializer": {
-                            "app_ref": "User"
-                        },
-                        "is_custom_type": True,
-                        "field_properties": {
-                            "read_only": "True",
-                        }
-                    },
-                    {
-                        "name": "author_id",
-                        "field_type": SerializerFieldTypes.IntegerField,
-                        "field_properties": {
-                            "write_only": "True",
-                        }
-                    },
+                    # {
+                    #     "name": "author",
+                    #     "field_type": "CustomUserSerializer",
+                    #     "external_serializer": {
+                    #         "app_ref": "User"
+                    #     },
+                    #     "is_custom_type": True,
+                    #     "field_properties": {
+                    #         "read_only": "True",
+                    #     }
+                    # },
+                    # {
+                    #     "name": "author_id",
+                    #     "field_type": SerializerFieldTypes.IntegerField,
+                    #     "field_properties": {
+                    #         "write_only": "True",
+                    #     }
+                    # },
                 ],
                 "meta": {
                     "model": "Blog",
@@ -205,12 +204,10 @@ class BlogControl(AppCreation):
         
         self.view_data = {
             "BlogView": {
-                "type": "modelView",
-                "lookup_field": "slug",
-                "permission_classes": [
-                    "IsAuthenticatedOrReadOnly",
-                ],
-                "is_paginated": True,
+                "lookup_field": "'slug'",
+                # "permission_classes": [
+                #     "IsAuthenticatedOrReadOnly",
+                # ],
                 "implement_search": {
                     "search_key": "keyword",
                     "search_fields": [
@@ -245,33 +242,28 @@ class BlogControl(AppCreation):
                     ]
                 }
             },
-            "BlogCommentView": {
-                "type": "modelView",
-                "is_paginated": True,
-                "type": "modelView",
-            },
+            "BlogCommentView": {},
             "BlogTagView": {
-                "type": "modelView",
-                "permission_classes": [
-                    "IsAuthenticatedOrReadOnly",
-                ],
+                # "permission_classes": [
+                #     "IsAuthenticatedOrReadOnly",
+                # ],
             },
             "TopBlogView": {
                 "model": "Blog",
                 "serializer": "BlogSerializer",
-                "http_methods": [
+                "http_method_names": [
                     "get",
                 ],
                 "get_top_content": {
                     "counter_key": "blog_comments",
-                    "order_key": "-comment_count",
+                    "order_key": "comment_count",
                     "amount": 5
                 }
             },
             "SimilarBlogView": {
                 "model": "Blog",
                 "serializer": "BlogSerializer",
-                "http_methods": [
+                "http_method_names": [
                     "get",
                 ],
                 "get_similar_content": {

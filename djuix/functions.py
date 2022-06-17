@@ -21,72 +21,7 @@ def update_settings(settings_path, project_id):
     directory_manager = DirectoryManager(settings_path)
     file_data = directory_manager.create_file("settings.py")
     directory_manager.write_file(file_data, settings_template)
-
-
-class WriteToSerializer:
-
-    def __init__(self, app_data, serializer_data):
-        self.app_data = app_data
-        self.serializer_data = serializer_data
-
-    def write_to_serializer(self):
-        content_data = "from rest_framework import serializers\n"
-
-        for active_serializer in self.serializer_data:
-            try:
-                content_data += f"from .models import {active_serializer.model_relation.name}\n"
-            except Exception:
-                pass
-        content_data += "\n\n"
-
-        for active_serializer in self.serializer_data:
-            model_name = None
-            try:
-                model_name = active_serializer.model_relation.name
-            except Exception:
-                pass
-
-            content_data += f"class {active_serializer.name}({'serializers.Serializer' if not model_name else 'serializers.ModelSerializer'}):\n"
-            fields = active_serializer.serializer_fields.all()
-
-            for field_data in fields:
-
-                content_data += f"\t{field_data.name} = serializers.{field_data.field_type}("
-                content_data = self.check_general(field_data, content_data)
-
-                content_data = content_data[:-2]
-                content_data += ")\n"
-            content_data += "\n"
-
-            if model_name:
-                content_data += "\tclass Meta:\n"
-                content_data += "\t\tfields='__all__'\n"
-                content_data += f"\t\tmodel={model_name}\n"
-                content_data += "\n\n"
-
-        try:
-            serializer_path = f"{self.app_data.project.project_path}{self.app_data.project.name}/{self.app_data.name}/"
-            directory_manager = DirectoryManager(serializer_path)
-            file_data = directory_manager.create_file("serializers.py")
-            directory_manager.write_file(file_data, content_data)
-            return True
-        except Exception as e:
-            print(e)
-            return False
-
-    @staticmethod
-    def check_general(field_data, content_data):
-        if not field_data.is_required:
-            content_data += "required=False, "
-        if field_data.is_write_only:
-            content_data += "write_only=True, "
-        if field_data.is_read_only:
-            content_data += "read_only=True, "
-        if field_data.is_many:
-            content_data += "many=True, "
-        return content_data      
-
-    
+  
 def create_settings(project_name, project_id):
     # add os import for settings
     SettingHeader.objects.update_or_create(value="import os", project_id=project_id)
@@ -240,3 +175,13 @@ def create_settings(project_name, project_id):
 
     SettingValue.objects.bulk_create(
         [SettingValue(project_id=project_id, **data) for data in settings_contents])
+    
+def write_to_file(path_data, file_name, content):
+    try:
+        directory_manager = DirectoryManager(path_data)
+        file_data = directory_manager.create_file(file_name)
+        directory_manager.write_file(file_data, content)
+        return True
+    except Exception as e:
+        print(e)
+        return False

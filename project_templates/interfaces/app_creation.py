@@ -1,6 +1,8 @@
-from app_controller.models import ModelInfo, SerializerInfo
+from app_controller.models import ModelInfo, SerializerInfo, UrlInfo, ViewsInfo
 from app_controller.services.write_model import WriteToModel
 from app_controller.services.write_serilizer import WriteToSerializer
+from app_controller.services.write_url import WriteToUrls
+from app_controller.services.write_view import WriteToView
 
 
 class AppCreation:
@@ -47,10 +49,42 @@ class AppCreation:
         WriteToSerializer(self.app, serializers)
     
     def createView(self):
-        pass
+        view_objs = []
+        for key, value in self.view_data.items():
+            serializer_name = key.replace("View", "Serializer")
+            if value.get("serializer", None) is not None:
+                serializer_name = value["serializer"]
+            serializer_relation = SerializerInfo.objects.filter(app_id=self.app.id, name=serializer_name)
+            if not serializer_relation:
+                continue
+            tem_data = {
+                "serializer_relation_id": serializer_relation[0].id,
+                "model_id": serializer_relation[0].model_relation.id,
+                "app_id": self.app.id,
+                "name": key,
+                "field_properties": value
+            }
+            view_objs.append(tem_data)
+            
+        views = ViewsInfo.objects.bulk_create([ViewsInfo(**i) for i in view_objs])
+        WriteToView(self.app, views)
     
     def createUrls(self):
-        pass
+        url_objs = []
+        for key, value in self.url_data.items():
+            view_relation = ViewsInfo.objects.filter(app_id=self.app.id, name=value.get("view", None))
+            if not view_relation:
+                continue
+            tem_data = {
+                "view_relation_id": view_relation[0].id,
+                "app_id": self.app.id,
+                "name": key,
+                "field_properties": value
+            }
+            url_objs.append(tem_data)
+            
+        urls = UrlInfo.objects.bulk_create([UrlInfo(**i) for i in url_objs])
+        WriteToUrls(self.app, urls)
     
     def createFlow(self):
         self.createModel()

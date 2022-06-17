@@ -1,6 +1,8 @@
 from rest_framework.viewsets import ModelViewSet
 
-from project_controller.sevices import process_app_creation
+from project_controller.services.write_utils import WriteUtils
+
+from .services.process_app_creation import process_app_creation
 from .serializers import Project, ProjectSerializer, App, AppSerializer
 from controllers.terminal_controller import TerminalController
 from rest_framework.response import Response
@@ -62,9 +64,17 @@ class ProjectView(ModelViewSet):
             print(e)
             raise Exception(e)
         
+        # create some basic project artifacts
+        WriteUtils(active_project)
+        
         if template == "blog":
             print("start creating blog template")
-            CreateBlogTemplate(active_project)
+            try:
+                CreateBlogTemplate(active_project)
+                terminal_controller.run_migration()
+            except Exception as e:
+                active_project.delete()
+                raise Exception(e)
 
         return Response(self.serializer_class(active_project).data, status=201)
 

@@ -1,12 +1,10 @@
-from controllers.directory_controller import DirectoryManager
+from app_controller.services.writer_main import WriterMain
 
-class WriteToSerializer:
+class WriteToSerializer(WriterMain):
     serializers = []
-    content_data = ""
-    app = None
     
     def __init__(self, app, serializers):
-        self.app = app
+        super().__init__(app)
         self.serializers = serializers
         self.write_serializer()
         
@@ -15,12 +13,11 @@ class WriteToSerializer:
         print("writing serializer")
         self.content_data = "from rest_framework import serializers\n"
         self.check_for_import()
-        self.content_data += "\n\n"
         
         for serializer in self.serializers:
             field_properties = serializer.field_properties
             serializer_type = field_properties["type"]
-            self.content_data += f"class {serializer.name}(serializers.{serializer_type}):\n"
+            self.content_data += f"\n\nclass {serializer.name}(serializers.{serializer_type}):\n"
             fields = field_properties.get("fields", [])
             
             for field_data in fields:    
@@ -40,34 +37,18 @@ class WriteToSerializer:
                     
                 self.content_data += f"\t{field_data['name']} = {field_type}({attrs_string})\n"
                 
-            should_double_next_line = False
-                
             print("writing extra data")
             meta = field_properties.get("meta", None)
             if meta:
-                should_double_next_line = True
                 self.format_meta(meta)
-                
-            if should_double_next_line:
-                self.content_data += "\n\n"
         
-        try:
-            print("writing to serializer file")
-            serializer_path = f"{self.app.project.project_path}/{self.app.project.name}/{self.app.name}/"
-            directory_manager = DirectoryManager(serializer_path)
-            file_data = directory_manager.create_file("serializers.py")
-            directory_manager.write_file(file_data, self.content_data)
-            return True
-        except Exception as e:
-            print(e)
-            return False
+        self.write_to_file('serializer')
         
     def format_meta(self, meta_data):
         print("writing meta data")
         self.content_data += f"\tclass Meta:\n"
         for k, v in meta_data.items():
             self.content_data += f"\t\t{k} = {v}\n"
-        print("finish writing meta data")
         
     def check_for_import(self):
         import_obj = {}
@@ -81,9 +62,8 @@ class WriteToSerializer:
             if not import_obj.get(key, None):
                 import_obj[key] = []
                     
-            import_obj[key].append(serializer.model_relation.name)
+            if serializer.model_relation.name not in import_obj[key]:
+                import_obj[key].append(serializer.model_relation.name)
             
             
-        for key, value in import_obj.items():
-            import_string = ", ".join(i for i in value)
-            self.content_data += f"from {key} import ({import_string})\n"
+        self.format_import(import_obj)

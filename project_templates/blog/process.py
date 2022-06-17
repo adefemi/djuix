@@ -1,6 +1,7 @@
 
 
-from project_controller.sevices import process_app_creation
+from project_controller.services.process_app_creation import process_app_creation
+from project_controller.services.write_url import WriteUrl
 from project_templates.blog.blog import BlogControl
 
 
@@ -16,6 +17,8 @@ class CreateBlogTemplate:
         # create user, blog and marketing app
         self.create_blog_app()
         pass
+    
+        WriteUrl(self.project)
     
     def create_blog_app(self):
         app = process_app_creation({

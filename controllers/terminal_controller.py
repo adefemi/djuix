@@ -147,13 +147,18 @@ class TerminalController(CommandTemplate):
 
     def run_migration(self):
         settings_path = f"{self.get_formatted_name()}.settings";
-        command_template = "{} && SET {}&& python manage.py makemigrations && python manage.py migrate"
         export_settings = f"DJANGO_SETTINGS_MODULE={settings_path}"
-
-        command = shlex.split(command_template.format(
-            self.get_env_full_path(), export_settings))
-        p = subprocess.Popen(command, cwd=self.get_project_full_path(),
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        
+        export_op_key = "SET"
+        if self.os_type == OsType.mac:
+            export_op_key =  "export"
+            
+        project_dir = self.get_project_full_path()
+        
+        command = f"{export_op_key} {export_settings} && cd {project_dir} && python manage.py makemigrations && python manage.py migrate"
+        command_template = self.get_access_template(command, "")
+        
+        p = subprocess.Popen(command_template, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         [_, err] = p.communicate()
         if err:
