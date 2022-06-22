@@ -1,13 +1,10 @@
+from asyncore import write
 from rest_framework import serializers
 from .models import Project, App
 
 
 class ProjectSerializer(serializers.ModelSerializer):
     delete_if_project_exist = serializers.BooleanField(write_only=True, default=False)
-    template = serializers.ChoiceField(required=False, choices=(
-        ("blog", "blog"),
-        ("custom", "custom"),
-    ), default="custom")
 
     class Meta:
         model = Project

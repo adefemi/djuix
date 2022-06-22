@@ -18,15 +18,19 @@ class ProjectView(ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         data = Helper.normalizer_request(request.data)
+        template = data.pop("template", None)
         
         delete_if_project_exist = data.get("delete_if_project_exist", False)
-        if(delete_if_project_exist):
-            Project.objects.filter(name=data["name"]).delete()
+        if delete_if_project_exist:
+            Project.objects.filter(name=data["name"]).delete() 
+        else:
+            proj = Project.objects.filter(name=data["name"])
+            if proj:
+                raise Exception(f"A project with name '{data['name']}' already exists")   
                 
         serializer = self.serializer_class(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.validated_data.pop("delete_if_project_exist", None)
-        template = serializer.validated_data.pop("template", None)
         serializer.save()
         
         project_path = serializer.data["project_path"]
@@ -48,7 +52,7 @@ class ProjectView(ModelViewSet):
 
         try:
             functions.create_settings(
-                serializer.data["name"], serializer.data["id"])
+                terminal_controller.get_formatted_name(), serializer.data["id"])
             print("settings created")
         except Exception as e:
             self.queryset.filter(id=serializer.data["id"]).delete()

@@ -1,11 +1,14 @@
 from django.db import models
-from django.utils import timezone
+from django.utils.text import slugify
+
+from abstractions.defaults import DEFAULT_PROJECT_DIR
 
 
 class Project(models.Model):
     name = models.CharField(max_length=50, unique=True)
     description = models.TextField(null=True, blank=True)
-    project_path = models.TextField(default="/")
+    project_path = models.TextField(default=DEFAULT_PROJECT_DIR, editable=False)
+    slug = models.SlugField(max_length=50, null=True, blank=True, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -14,6 +17,10 @@ class Project(models.Model):
 
     class Meta:
         ordering = ("-created_at", )
+        
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
 
 
 class SettingValue(models.Model):
@@ -42,7 +49,7 @@ class SettingHeader(models.Model):
 
 
 class App(models.Model):
-    name = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=50)
     description = models.TextField(null=True, blank=True)
     project = models.ForeignKey(
         Project, related_name="project_apps", on_delete=models.CASCADE)
@@ -54,3 +61,4 @@ class App(models.Model):
 
     class Meta:
         ordering = ("name", )
+        unique_together = ("project_id", "name")

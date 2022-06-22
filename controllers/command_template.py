@@ -9,7 +9,7 @@ class OsType:
 class CommandTemplate:
     os_type:OsType = OsType.windows
     
-    def __init__(self, os_type: OsType):
+    def __init__(self, os_type: OsType = OsType.linux):
         self.os_type = os_type
         
     def get_formatted_name(self, name=None):

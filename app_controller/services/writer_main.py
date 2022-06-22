@@ -1,7 +1,7 @@
-from controllers.directory_controller import DirectoryManager
+from controllers.command_template import CommandTemplate
 from djuix.functions import write_to_file
 
-class WriterMain:
+class WriterMain(CommandTemplate):
     content_data = ""
     app = None
     
@@ -10,7 +10,9 @@ class WriterMain:
         
     def write_to_file(self, filename, real_file_name=None):
         print(f"writing to {filename} file")
-        path_data = f"{self.app.project.project_path}/{self.app.project.name}/{self.app.name}/"
+        p_name = self.get_formatted_name(self.app.project.name)
+        a_name = self.get_formatted_name(self.app.name)
+        path_data = f"{self.app.project.project_path}/{p_name}/{a_name}/"
         file_name = f"{filename}s.py"
         if real_file_name:
             file_name = real_file_name

@@ -1,7 +1,8 @@
+from controllers.command_template import CommandTemplate
 from djuix.functions import write_to_file
 
 
-class WriteUrl:
+class WriteUrl(CommandTemplate):
     project = None
     
     def __init__(self, project):
@@ -23,7 +24,9 @@ class WriteUrl:
         
         content_data += "]\n"
         
-        path_data = f"{self.project.project_path}/{self.project.name}/{self.project.name}/"
+        p_name = self.get_formatted_name(self.project.name)
+        
+        path_data = f"{self.project.project_path}/{p_name}/{p_name}/"
         
         write_to_file(path_data, 'urls.py', content_data)
         

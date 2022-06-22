@@ -137,7 +137,8 @@ class TerminalController(CommandTemplate):
 
         # create serializer.py and url.py files
         from .directory_controller import DirectoryManager
-        dir_manager = DirectoryManager(f"{self.path}/{self.project_name}/{self.get_formatted_name(app_name)}/")
+        dir_path = f"{self.get_project_full_path()}/{self.get_formatted_name(app_name)}/"
+        dir_manager = DirectoryManager(dir_path)
 
         dir_manager.create_file("serializers.py", "a")
         dir_manager.create_file("urls.py", "a")

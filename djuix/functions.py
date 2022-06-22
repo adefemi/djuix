@@ -1,7 +1,7 @@
 from project_controller.models import SettingHeader, SettingValue
 from .helper import Helper
 from controllers.directory_controller import DirectoryManager
-from abstractions.enums import Enums, ModelFieldTypes
+from abstractions.enums import Enums
 
 
 # update settings file

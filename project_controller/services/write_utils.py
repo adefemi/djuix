@@ -1,3 +1,4 @@
+from controllers.command_template import CommandTemplate
 from djuix.functions import write_to_file
 
 
@@ -17,7 +18,10 @@ class WriteUtils:
         self.write_get_query()
         self.write_helper()
         
-        path_data = f"{self.project.project_path}/{self.project.name}/{self.project.name}/"
+        c = CommandTemplate()
+        project_name = c.get_formatted_name(self.project.name)
+        
+        path_data = f"{self.project.project_path}/{project_name}/{project_name}/"
         
         write_to_file(path_data, 'utils.py', self.content_data)
         

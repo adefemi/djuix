@@ -235,8 +235,9 @@ class WriteToView(WriterMain):
         
     def check_for_import(self):
         print("writing view imports")
+        p_name = self.get_formatted_name(self.app.project.name)
         import_obj = {
-            f"{self.app.project.name}.utils": ["Helper",]
+            f"{p_name}.utils": ["Helper",]
         }
         for view in self.views:
             field_properties = view.field_properties
@@ -270,7 +271,7 @@ class WriteToView(WriterMain):
                     import_obj[import_key].append('Count')
                     import_obj[import_key].append('Q')
                     
-                    key = f"{self.app.project.name}.utils"
+                    key = f"{p_name}.utils"
                     if not import_obj.get(key, None):
                         import_obj[key] = []
                         
