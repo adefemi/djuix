@@ -15,6 +15,7 @@ from project_templates.blog.process import CreateBlogTemplate
 class ProjectView(ModelViewSet):
     serializer_class = ProjectSerializer
     queryset = Project.objects.all()
+    lookup_field = "slug"
 
     def create(self, request, *args, **kwargs):
         data = Helper.normalizer_request(request.data)
