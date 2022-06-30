@@ -7,7 +7,7 @@ from controllers.terminal_controller import TerminalController
 from djuix import functions
 from project_controller.models import App
 from project_controller.serializers import AppSerializer
-from project_controller.services.write_settings import WriteSettings
+from project_controller.services.write_settings_file import WriteSettings
 
 
 def process_app_creation(data):

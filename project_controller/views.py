@@ -2,7 +2,7 @@ from django.conf import settings
 from rest_framework.viewsets import ModelViewSet
 from abstractions.defaults import PACKAGE_LIST
 from project_controller.models import ProjectSettings
-from .services.write_settings import WriteSettings
+from .services.write_settings_file import WriteSettings
 
 from project_controller.services.write_utils import WriteUtils
 
