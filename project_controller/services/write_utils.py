@@ -19,7 +19,7 @@ class WriteUtils:
         self.write_helper()
         
         c = CommandTemplate()
-        project_name = c.get_formatted_name(self.project.name)
+        project_name = self.project.formatted_name
         
         path_data = f"{self.project.project_path}/{project_name}/{project_name}/"
         

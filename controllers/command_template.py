@@ -12,10 +12,8 @@ class CommandTemplate:
     def __init__(self, os_type: OsType = OsType.linux):
         self.os_type = os_type
         
-    def get_formatted_name(self, name=None):
-        if name:
-            return name.lower().replace(" ", "_")
-        return self.project_name.lower().replace(" ", "_")
+    def get_formatted_name(self, name):
+        return name.lower().replace(" ", "_")
     
     def get_env_full_path(self):
         return f"{self.path}/{self.get_env()}{self.get_env_path()}"

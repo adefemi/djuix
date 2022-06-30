@@ -1,9 +1,13 @@
+from django.conf import settings
 from rest_framework.viewsets import ModelViewSet
+from abstractions.defaults import PACKAGE_LIST
+from project_controller.models import ProjectSettings
+from .services.write_settings import WriteSettings
 
 from project_controller.services.write_utils import WriteUtils
 
 from .services.process_app_creation import process_app_creation
-from .serializers import Project, ProjectSerializer, App, AppSerializer
+from .serializers import Project, ProjectSerializer, App, AppSerializer, ProjectSettingSerializer
 from controllers.terminal_controller import TerminalController
 from rest_framework.response import Response
 from djuix import functions
@@ -35,14 +39,13 @@ class ProjectView(ModelViewSet):
         serializer.save()
         
         project_path = serializer.data["project_path"]
-        active_project = None
+        active_project = self.queryset.get(id=serializer.data["id"])
 
-        terminal_controller = TerminalController(project_path, serializer.data["name"], delete_if_project_exist)
+        terminal_controller = TerminalController(project_path, active_project.formatted_name, delete_if_project_exist)
 
         try:
             terminal_controller.create_project()
             project_path = terminal_controller.path
-            active_project = self.queryset.get(id=serializer.data["id"])
             active_project.project_path = project_path
             active_project.save()
             print("project created")
@@ -52,18 +55,10 @@ class ProjectView(ModelViewSet):
             raise Exception(e)
 
         try:
-            functions.create_settings(
-                terminal_controller.get_formatted_name(), serializer.data["id"])
+            settings_c = WriteSettings(active_project)
+            settings_c.update_package_on_setting(PACKAGE_LIST)
+            settings_c.create_setting()
             print("settings created")
-        except Exception as e:
-            self.queryset.filter(id=serializer.data["id"]).delete()
-            print(e)
-            raise Exception(e)
-
-        try:
-            functions.update_settings(
-                terminal_controller.get_settings_path(), serializer.data["id"])
-            print("settings updated")
         except Exception as e:
             self.queryset.filter(id=serializer.data["id"]).delete()
             print(e)
@@ -92,4 +87,11 @@ class AppView(ModelViewSet):
         app = process_app_creation(request.data)
 
         return Response(self.get_serializer(app).data, status="201")
+    
+
+class SettingsView(ModelViewSet):
+    serializer_class = ProjectSettingSerializer
+    queryset = ProjectSettings.objects.select_related("project")
+    lookup_field = "project__slug"
+    
     

@@ -20,11 +20,11 @@ class WriteUrl(CommandTemplate):
         
         apps = self.project.project_apps.all()
         for app in apps:
-            content_data += f"\tpath('{app.name}-path/', include('{app.name}.urls')),\n"
+            content_data += f"\tpath('{app.formatted_name}-path/', include('{app.formatted_name}.urls')),\n"
         
         content_data += "]\n"
         
-        p_name = self.get_formatted_name(self.project.name)
+        p_name = self.project.formatted_name
         
         path_data = f"{self.project.project_path}/{p_name}/{p_name}/"
         

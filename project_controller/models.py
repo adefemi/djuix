@@ -6,6 +6,7 @@ from abstractions.defaults import DEFAULT_PROJECT_DIR
 
 class Project(models.Model):
     name = models.CharField(max_length=50, unique=True)
+    formatted_name = models.CharField(max_length=50, unique=True, editable=False, null=True)
     description = models.TextField(null=True, blank=True)
     project_path = models.TextField(default=DEFAULT_PROJECT_DIR, editable=False)
     slug = models.SlugField(max_length=50, null=True, blank=True, editable=False)
@@ -19,37 +20,20 @@ class Project(models.Model):
         ordering = ("-created_at", )
         
     def save(self, *args, **kwargs):
+        self.formatted_name = self.name.lower().replace(" ", "_")
         self.slug = slugify(self.name)
         super().save(*args, **kwargs)
+        
 
-
-class SettingValue(models.Model):
-    project = models.ForeignKey(
-        Project, related_name="project_setting_value", on_delete=models.CASCADE)
-    name = models.CharField(max_length=50)
-    value = models.TextField()
-
-    def __str__(self):
-        return f"{self.project.name} - {self.name}"
-
-    class Meta:
-        ordering = ("name", )
-
-
-class SettingHeader(models.Model):
-    project = models.ForeignKey(
-        Project, related_name="project_setting_header", on_delete=models.CASCADE)
-    value = models.TextField()
-
-    def __str__(self):
-        return f"{self.project.name} - {self.value}"
-
-    class Meta:
-        ordering = ("project__name", )
+class ProjectSettings(models.Model):
+    project = models.OneToOneField(
+        Project, related_name="project_setting", on_delete=models.CASCADE)
+    properties = models.JSONField(null=True, blank=True)
 
 
 class App(models.Model):
     name = models.CharField(max_length=50)
+    formatted_name = models.CharField(max_length=50, unique=True, editable=False, null=True)
     description = models.TextField(null=True, blank=True)
     project = models.ForeignKey(
         Project, related_name="project_apps", on_delete=models.CASCADE)
@@ -62,3 +46,7 @@ class App(models.Model):
     class Meta:
         ordering = ("name", )
         unique_together = ("project_id", "name")
+        
+    def save(self, *args, **kwargs):
+        self.formatted_name = self.name.lower().replace(" ", "_")
+        super().save(*args, **kwargs)

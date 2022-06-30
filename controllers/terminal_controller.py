@@ -1,7 +1,7 @@
 import os
 import subprocess
 import shlex
-from abstractions.packages import PackageList
+from abstractions.defaults import PACKAGE_LIST
 from controllers.command_template import CommandTemplate, OsType
 from .directory_controller import DirectoryManager
 
@@ -15,8 +15,7 @@ class TerminalController(CommandTemplate):
         self.delete_if_project_exist = delete_if_project_exist
         
     def get_settings_path(self):
-        formatted_project_name = self.get_formatted_name(self.project_name)
-        return f"{self.path}/{formatted_project_name}/{formatted_project_name}/"
+        return f"{self.path}/{self.project_name}/{self.project_name}/"
 
     def create_project(self):
         DirectoryManager.check_if_path_exist(self.path)
@@ -27,7 +26,7 @@ class TerminalController(CommandTemplate):
         
         command = 'django-admin startproject'
 
-        command_template = self.get_access_template(command, self.get_formatted_name())
+        command_template = self.get_access_template(command, self.project_name)
         p = subprocess.Popen(command_template, cwd=self.path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         p.wait()
         [_, err] = p.communicate()
@@ -37,7 +36,7 @@ class TerminalController(CommandTemplate):
         return True
     
     def define_project_standard_name(self):
-        return self.get_formatted_name() + "_main"
+        return self.project_name + "_main"
     
     def create_project_folder(self):
         project_name = self.define_project_standard_name()
@@ -74,10 +73,10 @@ class TerminalController(CommandTemplate):
         return True
 
     def get_env(self):
-        return self.get_formatted_name() + "_env"
+        return self.project_name + "_env"
     
     def get_project_full_path(self):
-        return f"{self.path}/{self.get_formatted_name()}"
+        return f"{self.path}/{self.project_name}"
     
     @staticmethod
     def transform_path(path):
@@ -108,8 +107,8 @@ class TerminalController(CommandTemplate):
         print("updated pip")
         
         package_string_list = ""
-        for package in PackageList.get_packages():
-            package_string_list += package + " "
+        for package in PACKAGE_LIST:
+            package_string_list += package["version"] + " "
             
         command = "pip install"
         command_template = self.get_access_template(command, package_string_list)
@@ -119,12 +118,11 @@ class TerminalController(CommandTemplate):
         if err:
             raise Exception(err.decode())
         
-        print("installed packages")
         return True
 
     def create_app(self, app_name):
         command = "python manage.py startapp"
-        command_template = self.get_access_template(command, self.get_formatted_name(app_name))
+        command_template = self.get_access_template(command, app_name)
 
         p = subprocess.Popen(command_template, cwd=self.get_project_full_path(),
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -137,7 +135,7 @@ class TerminalController(CommandTemplate):
 
         # create serializer.py and url.py files
         from .directory_controller import DirectoryManager
-        dir_path = f"{self.get_project_full_path()}/{self.get_formatted_name(app_name)}/"
+        dir_path = f"{self.get_project_full_path()}/{app_name}/"
         dir_manager = DirectoryManager(dir_path)
 
         dir_manager.create_file("serializers.py", "a")
@@ -147,7 +145,7 @@ class TerminalController(CommandTemplate):
         return True
 
     def run_migration(self):
-        settings_path = f"{self.get_formatted_name()}.settings";
+        settings_path = f"{self.project_name}.settings";
         export_settings = f"DJANGO_SETTINGS_MODULE={settings_path}"
         
         export_op_key = "SET"

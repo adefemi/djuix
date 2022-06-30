@@ -21,12 +21,17 @@ class WriterMain(CommandTemplate):
         
     def format_import(self, import_obj):
         for key, value in import_obj.items():
-            import_string = ""
-            if len(value) < 2:
-                import_string = value[0]
+            if key == "generic":
+                for i in value:
+                    self.content_data += f"import {i}"
+            
             else:
-                import_string = ", ".join(i for i in value)
-                import_string = f"({import_string})"
-            self.content_data += f"from {key} import {import_string}\n"
+                import_string = ""
+                if len(value) < 2:
+                    import_string = value[0]
+                else:
+                    import_string = ", ".join(i for i in value)
+                    import_string = f"({import_string})"
+                self.content_data += f"from {key} import {import_string}\n"
         
     

@@ -5,8 +5,9 @@ from functools import reduce
 from abstractions.enums import Enums
 from controllers.terminal_controller import TerminalController
 from djuix import functions
-from project_controller.models import App, SettingValue
+from project_controller.models import App
 from project_controller.serializers import AppSerializer
+from project_controller.services.write_settings import WriteSettings
 
 
 def process_app_creation(data):
@@ -14,38 +15,25 @@ def process_app_creation(data):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         
-        queryset = App.objects.prefetch_related("project")
+        app = App.objects.get(id=serializer.data["id"])
         
-        project = serializer.data["project"]
+        project = app.project
 
-        terminal_controller = TerminalController(
-            project["project_path"], project["name"])
+        terminal_controller = TerminalController(project.project_path, project.formatted_name,)
 
         try:
-            terminal_controller.create_app(serializer.data["name"])
+            terminal_controller.create_app(app.formatted_name)
         except Exception as e:
-            queryset.filter(id=serializer.data["id"]).delete()
+            app.delete()
             raise Exception(e)
         
         # update setting installed app with new app
         # get project settings installed app values
-        installed_apps = SettingValue.objects.get(project_id=project["id"], name=Enums.INSTALLED_APPS)
-        installed_apps_array = literal_eval(installed_apps.value)
-        new_installed_app = """[
-    {}'{}',
-]""".format(reduce(lambda a, b:f"{a}'{b}',\n    ", installed_apps_array, ""), serializer.data["name"])
-        installed_apps.value = new_installed_app
-        installed_apps.save()
+        project_settings = project.project_setting
+        project_settings.properties["INSTALLED_APPS"]["items"].append(f"'{app.formatted_name}'")
+        project_settings.save()
         
-        try:
-            functions.update_settings(
-                terminal_controller.get_settings_path(), project["id"])
-            print("settings updated")
-        except Exception as e:
-            queryset.filter(id=serializer.data["id"]).delete()
-            print(e)
-            raise Exception(e)
-        
-        app = App.objects.get(id=serializer.data["id"])
+        settings_c = WriteSettings(project)
+        settings_c.update_setting(project_settings.properties)
         
         return app

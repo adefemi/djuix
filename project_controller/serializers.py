@@ -1,6 +1,14 @@
-from asyncore import read, write
 from rest_framework import serializers
-from .models import Project, App
+from .models import Project, App, ProjectSettings
+
+
+class ProjectSettingSerializer(serializers.ModelSerializer):
+    project = serializers.CharField(read_only=True)
+    project_id = serializers.CharField(write_only=True)
+    
+    class Meta:
+        model = ProjectSettings
+        fields = "__all__"
 
 
 class AppSerializer(serializers.ModelSerializer):

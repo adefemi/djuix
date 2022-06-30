@@ -1,11 +1,10 @@
 from django.contrib import admin
-from .models import Project, SettingValue, SettingHeader, App
+from .models import Project, ProjectSettings, App
 
 # Register your models here.
 
 admin.site.register([
     Project,
-    SettingHeader,
-    SettingValue,
+    ProjectSettings,
     App
 ])
