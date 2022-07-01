@@ -37,18 +37,18 @@ SETTINGS_INFO = [
                     "Debug": "True",
                 }
             },
-            {
-                "name": "Secret Key",
-                "key": "SECRET_KEY",
-                "value": "",
-                "is_secure": True,
-            },
-            {
-                "name": "Allowed Hosts",
-                "key": "ALLOWED_HOSTS",
-                "value": "",
-                "help_text": "Specify your allowed hosts separated with a comma"
-            },
+            # {
+            #     "name": "Secret Key",
+            #     "key": "SECRET_KEY",
+            #     "value": "",
+            #     "is_secure": True,
+            # },
+            # {
+            #     "name": "Allowed Hosts",
+            #     "key": "ALLOWED_HOSTS",
+            #     "value": "",
+            #     "help_text": "Specify your allowed hosts separated with a comma"
+            # },
             {
                 "name": "Language",
                 "key": "LANGUAGE_CODE",
@@ -59,7 +59,9 @@ SETTINGS_INFO = [
             {
                 "name": "Timezone",
                 "key": "TIME_ZONE",
-                "value": "",
+                "options": {
+                    "UTC": "'UTC'",
+                }
             },
             {
                 "name": "USE TZ",

@@ -30,7 +30,7 @@ def process_app_creation(data):
         # update setting installed app with new app
         # get project settings installed app values
         project_settings = project.project_setting
-        project_settings.properties["INSTALLED_APPS"]["items"].append(f"'{app.formatted_name}'")
+        project_settings.properties["INSTALLED_APPS"]["items"].append(f"{app.formatted_name}")
         project_settings.save()
         
         settings_c = WriteSettings(project)

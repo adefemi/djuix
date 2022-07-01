@@ -41,10 +41,15 @@ class WriteSettings(WriterMain):
             value = ""
             if v.get('value', None) is not None:
                 value = v['value']
+                if v.get("is_string", False):
+                    value = f"'{value}'"
             elif v.get("items", None) is not None:
                 value = "[\n"
                 for i in v["items"]:
+                    if v.get("is_string", False):
+                        i = f"'{i}'"
                     value += f"\t{i},\n"
+                    
                 value += "]"
             self.content_data += f"\n{k} = {value}\n"
         
@@ -54,15 +59,15 @@ class WriteSettings(WriterMain):
         
     def set_template_key(self, props):
         self.content_data += "\nTEMPLATES = [\n\t{\n"
-        self.content_data += f"\t\t'BACKEND': {props['BACKEND']},\n"
+        self.content_data += f"\t\t'BACKEND': '{props['BACKEND']}',\n"
         self.content_data += f"\t\t'DIRS': {props['DIRS']},\n"
         self.content_data += f"\t\t'APP_DIRS': {props['APP_DIRS']},\n"
         self.content_data += "\t\t'OPTIONS': {\n"
         
         for i in props["options"]:
-            self.content_data += f"\t\t\t{i['name']}: [\n"
+            self.content_data += f"\t\t\t'{i['name']}': [\n"
             for j in i['items']:
-                self.content_data += f"\t\t\t\t{j},\n"
+                self.content_data += f"\t\t\t\t'{j}',\n"
             self.content_data += f"\t\t\t]\n"
         
         self.content_data += "\t\t}\n"
@@ -73,7 +78,9 @@ class WriteSettings(WriterMain):
         self.content_data += "\nDATABASES = {\n\t'default': {\n"
         for k,v in props.items():
             if k == "key": continue
-            self.content_data += f"\t\t{k}: {v},\n"
+            if props["key"] == "sqlite" and k == "ENGINE":
+                v = f"'{v}'"
+            self.content_data += f"\t\t'{k}': {v},\n"
         self.content_data += "\t}\n}\n"
         
     def check_for_import(self):
@@ -104,7 +111,8 @@ class WriteSettings(WriterMain):
                 }
             },
             "SECRET_KEY": {
-                "value": "'s_b=5%2n=!(dehix7vlv*r3*si)+kjob3ev=6k%kknv%sd#hk2'",
+                "value": "s_b=5%2n=!(dehix7vlv*r3*si)+kjob3ev=6k%kknv%sd#hk2",
+                "is_string": True
             },
             "DEBUG": {
                 "value": "True"
@@ -114,52 +122,56 @@ class WriteSettings(WriterMain):
             },
             "INSTALLED_APPS": {
                 "items": [
-                    "'django.contrib.admin'",
-                    "'django.contrib.auth'",
-                    "'django.contrib.contenttypes'",
-                    "'django.contrib.sessions'",
-                    "'django.contrib.messages'",
-                    "'django.contrib.staticfiles'",
-                ]
+                    "django.contrib.admin",
+                    "django.contrib.auth",
+                    "django.contrib.contenttypes",
+                    "django.contrib.sessions",
+                    "django.contrib.messages",
+                    "django.contrib.staticfiles",
+                ],
+                "is_string": True
             },
             "MIDDLEWARE": {
                 "items": [
-                    "'django.middleware.security.SecurityMiddleware'",
-                    "'django.contrib.sessions.middleware.SessionMiddleware'",
-                    "'django.middleware.common.CommonMiddleware'",
-                    "'django.middleware.csrf.CsrfViewMiddleware'",
-                    "'django.contrib.auth.middleware.AuthenticationMiddleware'",
-                    "'django.contrib.messages.middleware.MessageMiddleware'",
-                    "'django.middleware.clickjacking.XFrameOptionsMiddleware'",
-                ]
+                    "django.middleware.security.SecurityMiddleware",
+                    "django.contrib.sessions.middleware.SessionMiddleware",
+                    "django.middleware.common.CommonMiddleware",
+                    "django.middleware.csrf.CsrfViewMiddleware",
+                    "django.contrib.auth.middleware.AuthenticationMiddleware",
+                    "django.contrib.messages.middleware.MessageMiddleware",
+                    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+                ],
+                "is_string": True
             },
             "ROOT_URLCONF": {
-                "value": f"'{self.project.formatted_name}.urls'",
+                "value": f"{self.project.formatted_name}.urls",
+                "is_string": True
             },
             "TEMPLATES": {
-                "BACKEND": "'django.template.backends.django.DjangoTemplates'",
+                "BACKEND": "django.template.backends.django.DjangoTemplates",
                 "DIRS": '[]',
                 "APP_DIRS": 'True',
                 "options": [
                     {
-                        'name': "'context_processors'",
+                        'name': "context_processors",
                         'items': [
-                            "'django.template.context_processors.debug'",
-                            "'django.template.context_processors.request'",
-                            "'django.contrib.auth.context_processors.auth'",
-                            "'django.contrib.messages.context_processors.messages'",
+                            "django.template.context_processors.debug",
+                            "django.template.context_processors.request",
+                            "django.contrib.auth.context_processors.auth",
+                            "django.contrib.messages.context_processors.messages",
                         ]
                     }
                 ]
             },
             "WSGI_APPLICATION": {
-                "value": f"'{self.project.formatted_name}.wsgi.application'"
+                "value": f"{self.project.formatted_name}.wsgi.application",
+                "is_string": True
             },
             "DATABASES": {
                 "properties": {
                     "key": "sqlite",
-                    "'ENGINE'": "'django.db.backends.sqlite3'",
-                    "'NAME'": "os.path.join(BASE_DIR, 'db.sqlite3')",
+                    "ENGINE": "django.db.backends.sqlite3",
+                    "NAME": "os.path.join(BASE_DIR, 'db.sqlite3')",
                 },
                 "imports": {
                     "parent": None,
@@ -168,17 +180,20 @@ class WriteSettings(WriterMain):
             },
             "AUTH_PASSWORD_VALIDATORS": {
                 "items": [
-                    "'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'",
-                    "'django.contrib.auth.password_validation.MinimumLengthValidator'",
-                    "'django.contrib.auth.password_validation.CommonPasswordValidator'",
-                    "'django.contrib.auth.password_validation.NumericPasswordValidator'",
-                ]
+                    "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+                    "django.contrib.auth.password_validation.MinimumLengthValidator",
+                    "django.contrib.auth.password_validation.CommonPasswordValidator",
+                    "django.contrib.auth.password_validation.NumericPasswordValidator",
+                ],
+                "is_string": True
             },
             "LANGUAGE_CODE": {
-                'value': "'en-us'"
+                'value': "en-us",
+                "is_string": True
             },
             "TIME_ZONE": {
-                'value': "'UTC'"
+                'value': "UTC",
+                "is_string": True
             },
             "USE_I18N": {
                 "value": 'True'
@@ -190,7 +205,8 @@ class WriteSettings(WriterMain):
                 "value": 'True'
             },
             "STATIC_URL": {
-                "value": "'/static/'"
+                "value": "/static/",
+                "is_string": True
             }
         }
                 
@@ -201,9 +217,9 @@ class WriteSettings(WriterMain):
         
         for i in package_list:
             if i["name"] == "rest_framework":
-                self.settings_object["INSTALLED_APPS"]["items"].append("'rest_framework'")
+                self.settings_object["INSTALLED_APPS"]["items"].append("rest_framework")
             if i["name"] == "cors":
-                self.settings_object["INSTALLED_APPS"]["items"].append("'corsheaders'")
+                self.settings_object["INSTALLED_APPS"]["items"].append("corsheaders")
                 self.settings_object["CORS_ORIGIN_ALLOW_ALL"] = {
                     "value": 'True'
                 }
@@ -213,7 +229,7 @@ class WriteSettings(WriterMain):
                 self.settings_object["CORS_ALLOW_METHODS"] = {
                     "items": ["'GET'", "'POST'", "'PUT'", "'PATCH'", "'DELETE'", "'OPTIONS'"]
                 }
-                self.settings_object["MIDDLEWARE"]["items"].insert(2, "'corsheaders.middleware.CorsMiddleware'")
+                self.settings_object["MIDDLEWARE"]["items"].insert(2, "corsheaders.middleware.CorsMiddleware")
                 self.settings_object["CORS_ALLOW_HEADERS"] = {
                     "items": [
                         "'x-requested-with'",
