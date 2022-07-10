@@ -1,4 +1,3 @@
-from django.conf import settings
 from rest_framework.viewsets import ModelViewSet
 from abstractions.defaults import PACKAGE_LIST
 from project_controller.models import ProjectSettings
@@ -10,7 +9,6 @@ from .services.process_app_creation import process_app_creation
 from .serializers import Project, ProjectSerializer, App, AppSerializer, ProjectSettingSerializer
 from controllers.terminal_controller import TerminalController
 from rest_framework.response import Response
-from djuix import functions
 from djuix.helper import Helper
 
 from project_templates.blog.process import CreateBlogTemplate
@@ -81,7 +79,17 @@ class ProjectView(ModelViewSet):
 
 class AppView(ModelViewSet):
     serializer_class = AppSerializer
-    queryset = App.objects.prefetch_related("project")
+    queryset = App.objects.select_related("project")
+    
+    def get_queryset(self):
+        query = self.request.query_params
+        queryset = self.queryset
+        
+        if query.get("get_app_by_project_id", None) is not None:
+            id = query["get_app_by_project_id"]
+            queryset = queryset.filter(project__slug = id)
+            
+        return queryset
 
     def create(self, request, *args, **kwargs):
         app = process_app_creation(request.data)

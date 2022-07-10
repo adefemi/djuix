@@ -15,6 +15,9 @@ class CommandTemplate:
     def get_formatted_name(self, name):
         return name.lower().replace(" ", "_")
     
+    def get_formatted_class_name(self, name):
+        return name.capitalize().replace(" ", "")
+    
     def get_env_full_path(self):
         return f"{self.path}/{self.get_env()}{self.get_env_path()}"
     

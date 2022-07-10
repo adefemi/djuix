@@ -1,9 +1,10 @@
+from project_controller.serializers import AppSerializer
 from .models import ModelInfo, SerializerInfo, ViewsInfo, UrlInfo
 from rest_framework import serializers
 
 
 class ModelInfoSerializer(serializers.ModelSerializer):
-    app = serializers.CharField(read_only=True)
+    app = AppSerializer(read_only=True)
     app_id = serializers.IntegerField(write_only=True)
 
     class Meta:

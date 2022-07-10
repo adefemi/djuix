@@ -205,3 +205,106 @@ SETTINGS_INFO = [
         ]
     }
 ]
+
+common_relation_reference = {
+            "related_model_name": {
+                "type": "options",
+                "name": "Model Reference",
+                "instruction": "fetch_model_references",
+                "placeholder": "Select a model reference"
+            },
+            "related_name": {
+                "type": "string",
+                "name": "Related Name",
+                "optional": True,
+                "placeholder": "This is useful for reverse targetting"
+            },
+            "on_delete": {
+                "type": "options",
+                "name": "On Delete Reference",
+                "placeholder": "Decide what happens when a model reference is deleted",
+                "options": {
+                    "models.CASCADE": "Delete record",
+                    "models.SET_NULL": "Keep record",
+                }
+            }
+        }
+
+common_file_reference = {
+            "upload_to": {
+                "type": "string",
+                "name": "Upload to path",
+                "placeholder": "folder to upload to on your file storage",
+                "optional": True,
+            }
+        }
+
+MODEL_REQUIREMENT = {
+    "types": [
+        "CharField",
+        "TextField",
+        "DateTimeField", 
+        "FileField",
+        "ImageField",
+        "JSONField",
+        "ForeignKey",
+        "OneToOneField",
+        "ManyToManyField",
+        "EmailField", 
+        "SlugField",
+        "UUIDField", 
+        "BooleanField", 
+        "FloatField",
+        "IntegerField",
+    ],
+    "options_by_type": {
+        "CharField": {
+            "max_length": {
+                "type": "integer",
+                "name": "Maximum length",
+                "placeholder": "The maximum length of the field"
+            }
+        },
+        "FileField": common_file_reference,
+        "ImageField": common_file_reference,
+        "ForeignKey": common_relation_reference,
+        "OneToOneField": common_relation_reference,
+        "ManyToManyField": {
+            **common_relation_reference,
+            "on_delete": None
+        },
+        "SlugField": {
+            "field_reference": {
+                "type": "options", 
+                "name": "Field Reference",
+                "instruction": "get_field_references"
+            }
+        }
+    },
+    "defaults": {
+        "help_text": {
+            "type": "string",
+            "name": "Description",
+            "optional": True,
+            "placeholder": "Describe what the field does if its not obvious"
+        },
+        "default": {
+            "type": "string",
+            "optional": True,
+            "name": "Default Content",
+            "placeholder": "What the field holds by default"
+        },
+        "unique": {
+            "type": "boolean",
+            "name": "Unique"
+        },
+        "null": {
+            "type": "boolean",
+            "name": "null"
+        },
+        "blank": {
+            "type": "boolean",
+            "name": "blank"
+        }
+    }
+}

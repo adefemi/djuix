@@ -34,6 +34,10 @@ class ModelInfo(models.Model):
 
     def __str__(self):
         return f"{self.app.name} - {self.name}"
+    
+    def save(self, *args, **kwargs):
+        self.name = self.name.capitalize().replace('-', '').replace('_', '')
+        return super().save(*args, **kwargs)
 
 
 class SerializerInfo(models.Model):

@@ -34,7 +34,7 @@ class WriteToModel(WriterMain):
                     self.has_slug = True
                     self.slug_data = {
                         "field_name": field_data['name'],
-                        "field_to_use": field_data['field_reference'],
+                        "field_to_use": field_data["field_properties"].pop('field_reference'),
                     }
                 
                 if field_attrs:
@@ -42,11 +42,13 @@ class WriteToModel(WriterMain):
                     if related_model_name:
                         attrs_string += f"'{related_model_name}', "
                     for key,value in field_attrs.items():
+                        if key in ("related_name", "default", "help_text"):
+                            value = f"'{value}'"
                         attrs_string += f"{key}={value}, "
                 if field_attrs:
                     attrs_string = attrs_string[:-2]
                         
-                self.content_data += f"\t{field_data['name']} = models.{field_data['field_type']}({attrs_string})\n"                    
+                self.content_data += f"\t{self.get_formatted_name(field_data['name'])} = models.{field_data['field_type']}({attrs_string})\n"                    
             
             has_created_at = field_properties.get('has_created_at', False)
             if has_created_at:
@@ -93,6 +95,8 @@ class WriteToModel(WriterMain):
                 
         self.format_import(import_obj)
         string_attr = ", ".join(x.name for x in self.models)
+        if len(self.models) < 2:
+            string_attr = string_attr + ", "
         self.content_data += "\n\nadmin.site.register(\n"
         self.content_data += f"\t({string_attr})\n"
         self.content_data += ")\n"

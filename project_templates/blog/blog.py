@@ -34,7 +34,7 @@ class BlogControl(AppCreation):
                         "field_type": ModelFieldTypes.ManyToManyField,
                         "field_properties": {
                             "related_model_name": "BlogTag",
-                            "related_name": "'blog_tags'",
+                            "related_name": "blog_tags",
                         }
                     },
                     {
@@ -55,10 +55,11 @@ class BlogControl(AppCreation):
                     },
                     {
                         "name": "slug",
-                        "field_reference": "title",
+                        
                         "field_type": ModelFieldTypes.SlugField,
                         "field_properties": {
-                            "default": "''",
+                            "field_reference": "title",
+                            "default": "",
                             "max_length": "255",
                             "editable": "False"
                         }
@@ -68,7 +69,7 @@ class BlogControl(AppCreation):
                         "field_type": ModelFieldTypes.CharField,
                         "field_properties": {
                             "max_length": "255",
-                            "default": "'Annoymous'"
+                            "default": "Annoymous"
                         }
                     },
                     {
@@ -94,7 +95,7 @@ class BlogControl(AppCreation):
                         "field_type": ModelFieldTypes.ForeignKey,
                         "field_properties": {
                             "related_model_name": "Blog",
-                            "related_name": "'blog_comments'",
+                            "related_name": "blog_comments",
                             "on_delete": "models.CASCADE"
                         }
                     },
@@ -103,7 +104,7 @@ class BlogControl(AppCreation):
                         "field_type": ModelFieldTypes.CharField,
                         "field_properties": {
                             "max_length": "255",
-                            "default": "'Annoymous'"
+                            "default": "Annoymous"
                         }
                     },
                     {

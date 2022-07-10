@@ -10,6 +10,7 @@ class Project(models.Model):
     description = models.TextField(null=True, blank=True)
     project_path = models.TextField(default=DEFAULT_PROJECT_DIR, editable=False)
     slug = models.SlugField(max_length=50, null=True, blank=True, editable=False)
+    run_migration = models.BooleanField(default=True, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -33,7 +34,7 @@ class ProjectSettings(models.Model):
 
 class App(models.Model):
     name = models.CharField(max_length=50)
-    formatted_name = models.CharField(max_length=50, unique=True, editable=False, null=True)
+    formatted_name = models.CharField(max_length=50, editable=False, null=True)
     description = models.TextField(null=True, blank=True)
     project = models.ForeignKey(
         Project, related_name="project_apps", on_delete=models.CASCADE)
@@ -45,7 +46,7 @@ class App(models.Model):
 
     class Meta:
         ordering = ("name", )
-        unique_together = ("project_id", "name")
+        unique_together = ("project_id", "formatted_name")
         
     def save(self, *args, **kwargs):
         self.formatted_name = self.name.lower().replace(" ", "_")
