@@ -1,5 +1,6 @@
 from django.db import models
 from project_controller.models import App
+import re
 
 
 field_type_choices = (
@@ -36,7 +37,8 @@ class ModelInfo(models.Model):
         return f"{self.app.name} - {self.name}"
     
     def save(self, *args, **kwargs):
-        self.name = self.name.capitalize().replace('-', '').replace('_', '')
+        a = "".join([i.capitalize() for i in re.split('-|_| ', self.name)])
+        self.name = a
         return super().save(*args, **kwargs)
 
 
