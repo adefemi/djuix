@@ -2,7 +2,7 @@ from controllers.command_template import CommandTemplate
 from djuix.functions import write_to_file
 
 
-class WriteUrl(CommandTemplate):
+class WriteProjectUrl(CommandTemplate):
     project = None
     
     def __init__(self, project):

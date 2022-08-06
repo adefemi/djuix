@@ -20,7 +20,7 @@ class WriteToUrls(WriterMain):
         for url in self.urls:
             field_properties = url.field_properties
             
-            self.content_data += f"router.register('{(url.name)}', {field_properties['view']}, '{field_properties['name']}')\n"
+            self.content_data += f"router.register('{(url.name)}', {url.view_relation.name}, basename='{field_properties['name']}')\n"
             
         self.content_data += "\n"
         

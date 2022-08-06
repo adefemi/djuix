@@ -1,6 +1,7 @@
 from rest_framework.viewsets import ModelViewSet
 from abstractions.defaults import PACKAGE_LIST
 from project_controller.models import ProjectSettings
+from project_controller.services.write_url import WriteProjectUrl
 from .services.write_settings_file import WriteSettings
 
 from project_controller.services.write_utils import WriteUtils
@@ -93,6 +94,8 @@ class AppView(ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         app = process_app_creation(request.data)
+        
+        WriteProjectUrl(app.project)
 
         return Response(self.get_serializer(app).data, status="201")
     
