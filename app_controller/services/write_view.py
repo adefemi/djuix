@@ -6,9 +6,9 @@ class WriteToView(WriterMain):
     has_count_q_for_search = False
     implemented_queryset = False
     
-    def __init__(self, app, views):
+    def __init__(self, app):
         super().__init__(app)
-        self.views = views
+        self.views = app.app_views.all()
         self.write_view()
         
     def write_view(self):

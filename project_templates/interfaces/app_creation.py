@@ -45,8 +45,8 @@ class AppCreation:
             }
             serializer_objs.append(tem_data)
             
-        serializers = SerializerInfo.objects.bulk_create([SerializerInfo(**i) for i in serializer_objs])
-        WriteToSerializer(self.app, serializers)
+        SerializerInfo.objects.bulk_create([SerializerInfo(**i) for i in serializer_objs])
+        WriteToSerializer(self.app)
     
     def createView(self):
         view_objs = []
@@ -66,8 +66,8 @@ class AppCreation:
             }
             view_objs.append(tem_data)
             
-        views = ViewsInfo.objects.bulk_create([ViewsInfo(**i) for i in view_objs])
-        WriteToView(self.app, views)
+        ViewsInfo.objects.bulk_create([ViewsInfo(**i) for i in view_objs])
+        WriteToView(self.app)
     
     def createUrls(self):
         url_objs = []
@@ -83,8 +83,8 @@ class AppCreation:
             }
             url_objs.append(tem_data)
             
-        urls = UrlInfo.objects.bulk_create([UrlInfo(**i) for i in url_objs])
-        WriteToUrls(self.app, urls)
+        UrlInfo.objects.bulk_create([UrlInfo(**i) for i in url_objs])
+        WriteToUrls(self.app)
     
     def createFlow(self):
         self.createModel()

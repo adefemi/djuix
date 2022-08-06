@@ -3,9 +3,9 @@ from app_controller.services.writer_main import WriterMain
 class WriteToUrls(WriterMain):
     urls = []
 
-    def __init__(self, app, urls):
+    def __init__(self, app):
         super().__init__(app)
-        self.urls = urls
+        self.urls = app.app_urls.all()
         self.write_url()
         
     def write_url(self):

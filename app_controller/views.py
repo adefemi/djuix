@@ -1,4 +1,8 @@
+from app_controller.services.generateModelComponents import GenerateModelComponents
 from app_controller.services.write_model import WriteToModel
+from app_controller.services.write_serilizer import WriteToSerializer
+from app_controller.services.write_url import WriteToUrls
+from app_controller.services.write_view import WriteToView
 from .serializers import (
     ModelInfo, SerializerInfo, ViewsInfo, UrlInfo, ModelInfoSerializer,
     SerializerInfoSerializer, ViewInfoSerializer, UrlInfoSerializer
@@ -31,8 +35,14 @@ class ModelInfoView(ModelViewSet):
         serialized_data.is_valid(raise_exception=True)
         serialized_data.save()
         
-        active_app = self.queryset.get(id=serialized_data.data["id"]).app
+        active_model = self.queryset.get(id=serialized_data.data["id"])
+        active_app = active_model.app
         WriteToModel(active_app, active_app.app_models.all())
+        
+        GenerateModelComponents(active_model)
+        WriteToSerializer(active_app)
+        WriteToView(active_app)
+        WriteToUrls(active_app)
         
         active_app.project.run_migration = True
         active_app.project.save()

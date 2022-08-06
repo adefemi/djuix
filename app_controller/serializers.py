@@ -15,6 +15,8 @@ class ModelInfoSerializer(serializers.ModelSerializer):
 class SerializerInfoSerializer(serializers.ModelSerializer):
     model_relation = serializers.CharField(read_only=True)
     model_relation_id = serializers.CharField(write_only=True, required=False)
+    app = AppSerializer(read_only=True)
+    app_id = serializers.IntegerField(write_only=True)
 
     class Meta:
         fields = "__all__"
@@ -24,6 +26,10 @@ class SerializerInfoSerializer(serializers.ModelSerializer):
 class ViewInfoSerializer(serializers.ModelSerializer):
     serializer_relation = serializers.CharField(read_only=True)
     serializer_relation_id = serializers.CharField(write_only=True, required=False)
+    app = AppSerializer(read_only=True)
+    app_id = serializers.IntegerField(write_only=True)
+    model = serializers.CharField(read_only=True)
+    model_id = serializers.CharField(write_only=True, required=False)
 
     class Meta:
         fields = "__all__"
@@ -33,6 +39,8 @@ class ViewInfoSerializer(serializers.ModelSerializer):
 class UrlInfoSerializer(serializers.ModelSerializer):
     view_relation = serializers.CharField(read_only=True)
     view_relation_id = serializers.CharField(write_only=True, required=False)
+    app = AppSerializer(read_only=True)
+    app_id = serializers.IntegerField(write_only=True)
 
     class Meta:
         fields = "__all__"

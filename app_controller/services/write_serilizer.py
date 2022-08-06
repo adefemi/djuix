@@ -3,9 +3,9 @@ from app_controller.services.writer_main import WriterMain
 class WriteToSerializer(WriterMain):
     serializers = []
     
-    def __init__(self, app, serializers):
+    def __init__(self, app):
         super().__init__(app)
-        self.serializers = serializers
+        self.serializers = app.app_serializers.all()
         self.write_serializer()
         
     def write_serializer(self):
