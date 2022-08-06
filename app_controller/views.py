@@ -34,11 +34,25 @@ class ModelInfoView(ModelViewSet):
         active_app = self.queryset.get(id=serialized_data.data["id"]).app
         WriteToModel(active_app, active_app.app_models.all())
         
-        active_app.project.run_migration = False
+        active_app.project.run_migration = True
         active_app.project.save()
         
         return Response("Model created", status=201)
-        # return super().create(request, *args, **kwargs)
+    
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serialized_data = self.get_serializer(data=request.data, instance=instance, partial=True)
+        serialized_data.is_valid(raise_exception=True)
+        serialized_data.save()
+        
+        active_app = self.queryset.get(id=serialized_data.data["id"]).app
+
+        WriteToModel(active_app, active_app.app_models.all())
+        
+        active_app.project.run_migration = True
+        active_app.project.save()
+        
+        return Response("Model update", status=201)
     
 class SerializerInfoView(ModelViewSet):
     queryset = SerializerInfo.objects.select_related("model_relation", "model_relation__app")

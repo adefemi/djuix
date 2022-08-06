@@ -42,7 +42,7 @@ class WriteToModel(WriterMain):
                     if related_model_name:
                         attrs_string += f"'{related_model_name}', "
                     for key,value in field_attrs.items():
-                        if key in ("related_name", "default", "help_text"):
+                        if key in ("related_name", "default", "help_text", "upload_to"):
                             value = f"'{value}'"
                         attrs_string += f"{key}={value}, "
                 if field_attrs:
@@ -61,7 +61,6 @@ class WriteToModel(WriterMain):
             self.content_data += "\n"
             
             print("writing extra data")
-                
             
             meta = field_properties.get("meta", None)
             if meta:

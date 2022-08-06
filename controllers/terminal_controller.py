@@ -154,7 +154,7 @@ class TerminalController(CommandTemplate):
             
         project_dir = self.get_project_full_path()
         
-        command = f"{export_op_key} {export_settings} && cd {project_dir} && python manage.py makemigrations && python manage.py migrate"
+        command = f"{export_op_key} {export_settings} && cd {project_dir} && python manage.py makemigrations --noinput && python manage.py migrate"
         command_template = self.get_access_template(command, "")
         
         p = subprocess.Popen(command_template, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

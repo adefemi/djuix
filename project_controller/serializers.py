@@ -27,3 +27,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = "__all__"
+
+
+class RunMigrationSerializer(serializers.Serializer):
+    project_id = serializers.CharField()

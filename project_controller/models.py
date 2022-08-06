@@ -9,8 +9,8 @@ class Project(models.Model):
     formatted_name = models.CharField(max_length=50, unique=True, editable=False, null=True)
     description = models.TextField(null=True, blank=True)
     project_path = models.TextField(default=DEFAULT_PROJECT_DIR, editable=False)
-    slug = models.SlugField(max_length=50, null=True, blank=True, editable=False)
-    run_migration = models.BooleanField(default=True, editable=False)
+    slug = models.SlugField(max_length=50, null=True, blank=True, editable=True)
+    run_migration = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

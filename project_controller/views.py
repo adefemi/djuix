@@ -6,7 +6,7 @@ from .services.write_settings_file import WriteSettings
 from project_controller.services.write_utils import WriteUtils
 
 from .services.process_app_creation import process_app_creation
-from .serializers import Project, ProjectSerializer, App, AppSerializer, ProjectSettingSerializer
+from .serializers import Project, ProjectSerializer, App, AppSerializer, ProjectSettingSerializer, RunMigrationSerializer
 from controllers.terminal_controller import TerminalController
 from rest_framework.response import Response
 from djuix.helper import Helper
@@ -95,6 +95,26 @@ class AppView(ModelViewSet):
         app = process_app_creation(request.data)
 
         return Response(self.get_serializer(app).data, status="201")
+    
+
+class RunMigrationView(ModelViewSet):
+    http_method_names = ("post",)
+    serializer_class = RunMigrationSerializer
+    
+    def create(self, request, *args, **kwargs):
+        data = self.get_serializer(data=request.data)
+        data.is_valid(raise_exception=True)
+        
+        active_project = Project.objects.get(id=data.validated_data["project_id"])
+        
+        terminal_controller = TerminalController(active_project.project_path, active_project.formatted_name)
+        
+        terminal_controller.run_migration()
+        
+        active_project.run_migration = False
+        active_project.save()
+        
+        return Response("Migration created successfully")
     
 
 class SettingsView(ModelViewSet):

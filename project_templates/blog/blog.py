@@ -75,6 +75,7 @@ class BlogControl(AppCreation):
                     {
                         "name": "content",
                         "field_type": ModelFieldTypes.TextField,
+                        "field_properties": {}
                     }
                 ],
                 "has_created_at": True,
@@ -119,6 +120,7 @@ class BlogControl(AppCreation):
                     {
                         "name": "comment",
                         "field_type": ModelFieldTypes.TextField,
+                        "field_properties": {}
                     },
                 ],
                 "has_created_at": True,

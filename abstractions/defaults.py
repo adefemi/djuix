@@ -1,3 +1,6 @@
+from calendar import c
+
+
 DEFAULT_PROJECT_DIR="/Users/adefemioseni/Desktop/djuix_test_projects"
 PROJECT_TEMPLATES = [
     {
@@ -269,10 +272,7 @@ MODEL_REQUIREMENT = {
         "ImageField": common_file_reference,
         "ForeignKey": common_relation_reference,
         "OneToOneField": common_relation_reference,
-        "ManyToManyField": {
-            **common_relation_reference,
-            "on_delete": None
-        },
+        "ManyToManyField": {x: common_relation_reference[x] for x in common_relation_reference if x not in ["on_delete"]},
         "SlugField": {
             "field_reference": {
                 "type": "options", 

@@ -37,8 +37,9 @@ class ModelInfo(models.Model):
         return f"{self.app.name} - {self.name}"
     
     def save(self, *args, **kwargs):
-        a = "".join([i.capitalize() for i in re.split('-|_| ', self.name)])
-        self.name = a
+        if not self.pk:
+            a = "".join([i.capitalize() for i in re.split('-|_| ', self.name)])
+            self.name = a
         return super().save(*args, **kwargs)
 
 
