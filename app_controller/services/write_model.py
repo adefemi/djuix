@@ -7,9 +7,9 @@ class WriteToModel(WriterMain):
     has_slug = False
     slug_data = {}
 
-    def __init__(self, app, models):
+    def __init__(self, app):
         super().__init__(app)
-        self.models = models
+        self.models = app.app_models.all()
         self.write_model()
         self.write_admin()
 

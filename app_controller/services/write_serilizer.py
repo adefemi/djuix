@@ -5,7 +5,7 @@ class WriteToSerializer(WriterMain):
     
     def __init__(self, app):
         super().__init__(app)
-        self.serializers = app.app_serializers.all()
+        self.serializers = app.app_serializers.all().order_by('created_at')
         self.write_serializer()
         
     def write_serializer(self):
@@ -54,16 +54,22 @@ class WriteToSerializer(WriterMain):
         import_obj = {}
         for serializer in self.serializers:
             field_properties = serializer.field_properties
-            app_ref = field_properties.get("app_ref", None)
-            key = ".models"
-            if app_ref is not None:
-                key = f"{app_ref}.models"
             
+            key = ".models"
             if not import_obj.get(key, None):
                 import_obj[key] = []
                     
             if serializer.model_relation.name not in import_obj[key]:
                 import_obj[key].append(serializer.model_relation.name)
+                
+            fields = field_properties.get("fields", [])
+            for field in fields:
+                app_ref = field.get("app_ref", None)
+                if app_ref is not None:
+                    key = f"{app_ref}.serializers"
+                    if not import_obj.get(key, None):
+                        import_obj[key] = []
+                    import_obj[key].append(field["field_type"])
             
             
         self.format_import(import_obj)

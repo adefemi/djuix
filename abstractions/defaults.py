@@ -242,8 +242,7 @@ common_file_reference = {
             }
         }
 
-MODEL_REQUIREMENT = {
-    "types": [
+FIELD_TYPES = [
         "CharField",
         "TextField",
         "DateTimeField", 
@@ -259,7 +258,10 @@ MODEL_REQUIREMENT = {
         "BooleanField", 
         "FloatField",
         "IntegerField",
-    ],
+    ]
+
+MODEL_REQUIREMENT = {
+    "types": FIELD_TYPES,
     "options_by_type": {
         "CharField": {
             "max_length": {
@@ -306,5 +308,46 @@ MODEL_REQUIREMENT = {
             "type": "boolean",
             "name": "blank"
         }
+    }
+}
+
+SERIALIZER_FIELD_TYPES = []
+
+for i in FIELD_TYPES:
+    if i in ["ForeignKey", "OneToOneField", "ManyToManyField"]:
+        continue
+    SERIALIZER_FIELD_TYPES.append(i)
+    
+SERIALIZER_FIELD_TYPES.append("RelatedField")
+
+SERIALIZER_REQUIREMENT = {
+    "types": SERIALIZER_FIELD_TYPES,
+    "options_by_type": {
+        "RelatedField": {
+            "related_serializer_name": {
+                "type": "options",
+                "name": "Serializer Reference",
+                "instruction": "fetch_serializer_references",
+                "placeholder": "Select a serializer reference"
+            },
+        }
+    },
+    "defaults": {
+        "read_only": {
+            "type": "boolean",
+            "name": "is_read_only"
+        },
+        "write_only": {
+            "type": "boolean",
+            "name": "is_write_only"
+        },
+        "required": {
+            "type": "boolean",
+            "name": "not_required"
+        },
+        "many": {
+            "type": "boolean",
+            "name": "has_many_outputs"
+        },
     }
 }

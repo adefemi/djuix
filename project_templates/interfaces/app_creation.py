@@ -28,8 +28,7 @@ class AppCreation:
             }
             model_objs.append(tem_data)
             
-        models = ModelInfo.objects.bulk_create([ModelInfo(**i) for i in model_objs])
-        WriteToModel(self.app, models)
+        WriteToModel(self.app)
     
     def createSerializer(self):
         serializer_objs = []

@@ -37,7 +37,7 @@ class ModelInfoView(ModelViewSet):
         
         active_model = self.queryset.get(id=serialized_data.data["id"])
         active_app = active_model.app
-        WriteToModel(active_app, active_app.app_models.all())
+        WriteToModel(active_app)
         
         GenerateModelComponents(active_model)
         WriteToSerializer(active_app)
@@ -57,7 +57,7 @@ class ModelInfoView(ModelViewSet):
         
         active_app = self.queryset.get(id=serialized_data.data["id"]).app
 
-        WriteToModel(active_app, active_app.app_models.all())
+        WriteToModel(active_app)
         
         active_app.project.run_migration = True
         active_app.project.save()
@@ -76,7 +76,30 @@ class SerializerInfoView(ModelViewSet):
             id = query["get_by_app_id"]
             queryset = queryset.filter(app_id = id)
             
+        if query.get("get_by_project_id", None) is not None:
+            id = query["get_by_project_id"]
+            self.pagination_class = None
+            queryset = queryset.filter(app__project_id = id)
+            
         return queryset
+    
+    def create(self, request, *args, **kwargs):
+        serialized_data = self.get_serializer(data=request.data)
+        serialized_data.is_valid(raise_exception=True)
+        serialized_data.save()
+        
+        active_serializer = self.queryset.get(id=serialized_data.data["id"])
+        active_app = active_serializer.app
+        WriteToSerializer(active_app)
+        
+        return Response("Model created", status=201)
+    
+    def update(self, request, *args, **kwargs):
+        super().update(request, *args, **kwargs)
+        
+        WriteToSerializer(self.get_object().app)
+        
+        return Response("Model updated", status=200)
     
 class ViewInfoView(ModelViewSet):
     queryset = ViewsInfo.objects.select_related(

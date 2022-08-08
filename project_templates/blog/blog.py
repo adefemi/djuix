@@ -139,7 +139,7 @@ class BlogControl(AppCreation):
             "BlogTagSerializer": {
                 "meta": {
                     "model": "BlogTag",
-                    "fields": "('id', 'title',)"
+                    "fields": "['id', 'title']"
                 },
                 "type": "ModelSerializer",
             },

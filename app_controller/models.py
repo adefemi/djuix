@@ -62,6 +62,15 @@ class SerializerInfo(models.Model):
     def __str__(self):
         return f"{self.model_relation.app.name} - {self.name}"
     
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            a = "".join([i.capitalize() for i in re.split('-|_| ', self.name)])
+            if "serializer" in a.lower():
+                a.lower().replace("serializer", "")
+            a = f"{a}Serializer"
+            self.name = a
+        return super().save(*args, **kwargs)
+    
     
 class ViewsInfo(models.Model):
     serializer_relation = models.ForeignKey(
