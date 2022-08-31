@@ -24,8 +24,12 @@ class WriteToSerializer(WriterMain):
                 field_attrs = field_data.get("field_properties", None)
                 attrs_string = ""
                 
+                has_read_only = field_attrs.get("read_only", False)
+                
                 if field_attrs:
                     for key,value in field_attrs.items():
+                        if key == "required" and has_read_only:
+                            continue
                         attrs_string += f"{key}={value}, "
                 if field_attrs:
                     attrs_string = attrs_string[:-2]

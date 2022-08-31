@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'project_controller',
     'app_controller',
-    'requirements_abstraction'
+    'requirements_abstraction',
+    'utilities'
 ]
 
 REST_FRAMEWORK = {

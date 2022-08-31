@@ -1,14 +1,17 @@
+from functools import partial
 from app_controller.services.generateModelComponents import GenerateModelComponents
 from app_controller.services.write_model import WriteToModel
 from app_controller.services.write_serilizer import WriteToSerializer
 from app_controller.services.write_url import WriteToUrls
 from app_controller.services.write_view import WriteToView
+from djuix.helper import Helper
 from .serializers import (
     ModelInfo, SerializerInfo, ViewsInfo, UrlInfo, ModelInfoSerializer,
     SerializerInfoSerializer, ViewInfoSerializer, UrlInfoSerializer
 )
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
+from abstractions.enums import ModelFieldTypes
 
 
 class ModelInfoView(ModelViewSet):
@@ -115,6 +118,158 @@ class ViewInfoView(ModelViewSet):
             queryset = queryset.filter(app_id = id)
             
         return queryset
+    
+    def create(self, request, *args, **kwargs):
+        data = self.setup_data(request)
+        
+        save_data = self.get_serializer(data=data)
+        save_data.is_valid(raise_exception=True)
+        save_data.save()
+        
+        active_app = self.queryset.get(id=save_data.data["id"]).app
+        
+        WriteToView(active_app)
+        
+        return Response("View created successfully")
+    
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        data = self.setup_data(request)
+        
+        save_data = self.get_serializer(data=data, instance=instance, partial=True)
+        save_data.is_valid(raise_exception=True)
+        save_data.save()
+        
+        active_app = instance.app
+        
+        WriteToView(active_app)
+        
+        return Response("View update successfully")
+    
+    def setup_data(self, request):
+        normalized_data = Helper.normalizer_request(request.data)
+        if not normalized_data.get("serializer_id", None):
+            raise Exception("You must provide a serializer_id")
+        if not normalized_data.get("name", None):
+            raise Exception("You must provide a name for the view")
+        
+        active_serializer = SerializerInfoView.queryset.get(id=normalized_data["serializer_id"])
+        active_model = active_serializer.model_relation
+        active_app = active_serializer.app
+        
+        new_data_structure = {
+            "name": normalized_data["name"],
+            "serializer_relation_id": normalized_data["serializer_id"],
+            "app_id": active_app.id,
+            "model_id": active_model.id,
+        }
+        
+        field_properties = {
+            "model": active_model.name,
+            "serializer": active_serializer.name,
+        }
+        
+        has_http_method_names = normalized_data.get("http_method_names", None)
+        if has_http_method_names:
+            field_properties["http_method_names"] = has_http_method_names
+            
+        has_lookup_field = normalized_data.get("lookup_field", None)
+        if has_lookup_field:
+            field_properties["lookup_field"] = has_lookup_field
+            
+        can_create = True if not has_http_method_names or "post" in has_http_method_names else False
+        can_update = True if not has_http_method_names or "patch" in has_http_method_names else False
+        
+        self.handle_similar_content(field_properties, normalized_data, active_model)
+        self.handle_top_content(field_properties, normalized_data)
+        self.handle_implement_search(field_properties, normalized_data)
+        if can_create:
+            self.override_create(active_serializer, field_properties)
+        if can_update:
+            self.override_update(active_serializer, field_properties)
+        
+        new_data_structure["field_properties"] = field_properties
+        
+        return new_data_structure
+        
+    @staticmethod
+    def handle_implement_search(field_obj, request_obj):
+        implement_search = request_obj.get("implement_search", None)
+        if implement_search:
+            field_obj["implement_search"] = implement_search
+    
+    @staticmethod
+    def override_create(active_serializer, field_obj):
+        model = active_serializer.model_relation
+        
+        # check if model field contains foreign relationsips
+        fields = model.field_properties.get("fields", None)
+        has_override_create = False
+        if fields:
+            for field in fields:
+                if field["field_type"] in (ModelFieldTypes.ManyToManyField, ):
+                    if not has_override_create:
+                        field_obj["override_create"] = {}
+                        has_override_create = True
+                    ViewInfoView.add_many_to_many(field_obj["override_create"], field, active_serializer.app)
+                    
+    @staticmethod
+    def override_update(active_serializer, field_obj):
+        model = active_serializer.model_relation
+        
+        # check if model field contains foreign relationsips
+        fields = model.field_properties.get("fields", None)
+        has_override_create = False
+        if fields:
+            for field in fields:
+                if field["field_type"] in (ModelFieldTypes.ManyToManyField, ):
+                    if not has_override_create:
+                        field_obj["override_update"] = {}
+                        has_override_create = True
+                    ViewInfoView.add_many_to_many(field_obj["override_update"], field, active_serializer.app, "update_many_to_many")
+                    
+    @staticmethod
+    def add_many_to_many(field_obj, my_field, active_app, key="add_many_to_many"):
+        active_model = active_app.app_models.filter(name=my_field["field_properties"]['related_model_name'])
+        field_to_check = "id"
+        
+        if not field_obj.get(key, None):
+            field_obj[key] = []
+        
+        if active_model:
+            for field in active_model[0].field_properties["fields"]:
+                if field["field_type"] in (ModelFieldTypes.ForeignKey, ModelFieldTypes.ManyToManyField, ModelFieldTypes.OneToOneField, ModelFieldTypes.FileField, ModelFieldTypes.ImageField):
+                    continue
+                if field.get("field_properties", None):
+                    if field["field_properties"].get("unique", None) == "True":
+                        field_to_check = field["name"]
+                        break
+        
+        field_obj[key].append(
+            {
+                "field_name": my_field["name"],
+                "field_body_key": my_field["name"],
+                "field_model": my_field["field_properties"]['related_model_name'],
+                "field_check_key": field_to_check
+            }
+        )
+        
+    @staticmethod
+    def handle_similar_content(field_obj, request_obj, model):
+        get_similar_content = request_obj.get("get_similar_content", None)
+        if get_similar_content:
+            field_obj["get_similar_content"] = get_similar_content
+            field_obj["get_similar_content"]["search_id"] = f"{model.name.lower()}_id"
+            
+    @staticmethod
+    def handle_top_content(field_obj, request_obj):
+        get_top_content = request_obj.get("get_top_content", None)
+        if get_top_content:
+            field_obj["get_top_content"] = get_top_content
+            field_obj["get_top_content"]["order_key"] = field_obj["get_top_content"]["counter_key"] + "_count"
+        
+        
+        
     
 class UrlInfoView(ModelViewSet):
     queryset = UrlInfo.objects.select_related(

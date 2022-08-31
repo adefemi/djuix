@@ -215,7 +215,7 @@ class BlogControl(AppCreation):
                     "search_key": "keyword",
                     "search_fields": [
                         "title",
-                        "tags_title",
+                        "tags__title",
                     ]
                 },
                 "override_create": {
@@ -259,7 +259,7 @@ class BlogControl(AppCreation):
                 ],
                 "get_top_content": {
                     "counter_key": "blog_comments",
-                    "order_key": "comment_count",
+                    "order_key": "blog_comments_count",
                     "amount": 5
                 }
             },

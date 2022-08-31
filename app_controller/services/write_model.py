@@ -36,6 +36,7 @@ class WriteToModel(WriterMain):
                         "field_name": field_data['name'],
                         "field_to_use": field_data["field_properties"].pop('field_reference'),
                     }
+                    field_attrs["unique"] = "True"
                 
                 if field_attrs:
                     related_model_name = field_attrs.pop("related_model_name", None)

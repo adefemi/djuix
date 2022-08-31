@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from abstractions.defaults import PROJECT_TEMPLATES, SERIALIZER_REQUIREMENT, SETTINGS_INFO, MODEL_REQUIREMENT
 
 class GetProjectTemplate(ModelViewSet):
-    http_method_names = ("get")
+    http_method_names = ("get",)
     
     def get_queryset(self):
         return None
@@ -14,7 +14,7 @@ class GetProjectTemplate(ModelViewSet):
     
 
 class GetSettingInfo(ModelViewSet):
-    http_method_names = ("get")
+    http_method_names = ("get",)
     
     def get_queryset(self):
         return None
@@ -24,7 +24,7 @@ class GetSettingInfo(ModelViewSet):
     
     
 class GetModelFieldInfo(ModelViewSet):
-    http_method_names = ("get")
+    http_method_names = ("get",)
     
     def get_queryset(self):
         return None
@@ -34,7 +34,7 @@ class GetModelFieldInfo(ModelViewSet):
     
 
 class GetSerializerFieldInfo(ModelViewSet):
-    http_method_names = ("get")
+    http_method_names = ("get",)
     
     def get_queryset(self):
         return None
