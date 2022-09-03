@@ -151,7 +151,7 @@ class GetLookupFieldOptions(ModelViewSet):
                 continue
             
             if field.get("field_properties", None):
-                if field["field_properties"].get("unique", None) == "True":
+                if field["field_properties"].get("unique", None) or field["field_properties"].get("unique", None) == "True":
                     fields.append(field["name"])
     
         return Response(fields)

@@ -269,8 +269,6 @@ class ViewInfoView(ModelViewSet):
             field_obj["get_top_content"]["order_key"] = field_obj["get_top_content"]["counter_key"] + "_count"
         
         
-        
-    
 class UrlInfoView(ModelViewSet):
     queryset = UrlInfo.objects.select_related(
         "view_relation", "view_relation__serializer_relation", "view_relation__serializer_relation__model_relation",
@@ -287,3 +285,84 @@ class UrlInfoView(ModelViewSet):
             queryset = queryset.filter(app_id = id)
             
         return queryset
+    
+    def create(self, request, *args, **kwargs):
+        normalized_data = Helper.normalizer_request(request.data)
+        if not normalized_data.get("view_relation_id", None):
+            raise Exception("You must provide a view_relation_id")
+        if not normalized_data.get("name", None):
+            raise Exception("You must provide a name for the url")
+        
+        active_view = ViewInfoView.queryset.get(id=normalized_data["view_relation_id"])
+        active_app = active_view.app
+        
+        obj = {
+            "view_relation_id": normalized_data["view_relation_id"],
+            "name": Helper.camelToSnakeDash(normalized_data["name"]),
+            "app_id": active_app.id
+        }
+        
+        field_properties = {
+            "view": active_view.name,
+            "name": f"{obj['name']}_list",
+        }
+        
+        self.get_kwargs(field_properties, active_view)
+        obj['field_properties'] = field_properties
+        
+        save_data = self.get_serializer(data=obj)
+        save_data.is_valid(raise_exception=True)
+        save_data.save()
+        
+        WriteToUrls(active_app)
+        
+        return Response("Created url successfully")
+    
+    def update(self, request, *args, **kwargs):
+        normalized_data = Helper.normalizer_request(request.data)
+        instance = self.get_object()
+        
+        if not normalized_data.get("view_relation_id", None):
+            raise Exception("You must provide a view_relation_id")
+        if not normalized_data.get("name", None):
+            raise Exception("You must provide a name for the url")
+        
+        obj = {
+            "view_relation_id": normalized_data["view_relation_id"],
+            "name": Helper.camelToSnakeDash(normalized_data["name"]),
+        }
+        
+        active_view = ViewInfoView.queryset.get(id=obj["view_relation_id"])
+        active_app = active_view.app
+        
+        field_properties = {
+            "view": active_view.name,
+            "name": f"{obj['name']}_list",
+        }
+        
+        self.get_kwargs(field_properties, active_view)
+        obj['field_properties'] = field_properties
+        
+        save_data = self.get_serializer(data=obj, instance=instance, partial=True)
+        save_data.is_valid(raise_exception=True)
+        save_data.save()
+        
+        WriteToUrls(active_app)
+        
+        return Response("Created url successfully")
+        
+    def get_kwargs(self, field_properties, active_view):
+        view_properties = active_view.field_properties
+        
+        has_get_similar_content = view_properties.get("get_similar_content", None)
+        
+        if(has_get_similar_content):
+            if not field_properties.get("kwargs", None):
+                field_properties["kwargs"] = []
+                
+            t_obj = {
+                "key": has_get_similar_content["search_id"],
+                "type": "int" if has_get_similar_content["field_to_check"] == "id" else "str",
+            }
+            
+            field_properties["kwargs"].append(t_obj)

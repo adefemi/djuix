@@ -64,7 +64,7 @@ class WriteToView(WriterMain):
         view_attrs["serializer_class"] = serializer
         
         if props.get("lookup_field", None) is not None:
-            view_attrs["lookup_field"] = props["lookup_field"]
+            view_attrs["lookup_field"] = f"'{props['lookup_field']}'"
             
         if props.get("http_method_names", None) is not None:
             view_attrs["http_method_names"] = props["http_method_names"]
