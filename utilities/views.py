@@ -3,7 +3,8 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from abstractions.enums import ModelFieldTypes
 
-from app_controller.models import SerializerInfo
+from app_controller.models import ModelInfo, SerializerInfo, UrlInfo, ViewsInfo
+from project_controller.models import App
 
 # Create your views here.
 
@@ -155,3 +156,37 @@ class GetLookupFieldOptions(ModelViewSet):
                     fields.append(field["name"])
     
         return Response(fields)
+    
+    
+class GetAppAttributes(ModelViewSet):
+    http_method_names = ("get",)
+    
+    def get_queryset(self):
+        return None
+    
+    def get_attributeInfo(self, model):
+        query = model.objects.filter(app_id=self.app_id)
+        count = query.count()
+        order_with_update = query.order_by("-updated_at")
+        last_update = None
+        if order_with_update:
+            last_update = order_with_update[0].updated_at
+            
+        return {"count": count, "last_update": last_update}
+    
+    def list(self, request, app_id):
+        try:
+            active_app = App.objects.get(id=app_id)
+            self.app_id = app_id
+        except App.DoesNotExist:
+            raise Exception("App with specified id does not exist")
+        
+        # for models
+        data = {
+            "model": self.get_attributeInfo(ModelInfo),
+            "serializer": self.get_attributeInfo(SerializerInfo),
+            "view": self.get_attributeInfo(ViewsInfo),
+            "url": self.get_attributeInfo(UrlInfo),
+        }
+    
+        return Response(data)

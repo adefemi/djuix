@@ -207,7 +207,7 @@ class BlogControl(AppCreation):
         
         self.view_data = {
             "BlogView": {
-                "lookup_field": "'slug'",
+                "lookup_field": "slug",
                 # "permission_classes": [
                 #     "IsAuthenticatedOrReadOnly",
                 # ],

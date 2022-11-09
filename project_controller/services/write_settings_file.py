@@ -78,8 +78,11 @@ class WriteSettings(WriterMain):
         self.content_data += "\nDATABASES = {\n\t'default': {\n"
         for k,v in props.items():
             if k == "key": continue
-            if props["key"] == "sqlite" and k == "ENGINE":
-                v = f"'{v}'"
+            
+            if k == "PORT":
+                v = f"{v}"
+            else:
+                v = f'"{v}"'
             self.content_data += f"\t\t'{k}': {v},\n"
         self.content_data += "\t}\n}\n"
         

@@ -27,14 +27,16 @@ class ModelInfo(models.Model):
         App, related_name="app_models", on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     field_properties = models.JSONField(default=None, null=True)
+    has_created_migration = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
         unique_together = ('app_id', 'name')
+        ordering = ('created_at',)
 
     def __str__(self):
-        return f"{self.app.name} - {self.name}"
+        return f"{self.app.project.name} - {self.app.name} - {self.name}"
     
     def save(self, *args, **kwargs):
         if not self.pk:
@@ -66,7 +68,7 @@ class SerializerInfo(models.Model):
         if not self.pk:
             a = "".join([i.capitalize() for i in re.split('-|_| ', self.name)])
             if "serializer" in a.lower():
-                a = a.lower().replace("serializer", "")
+                a = a.lower().replace("serializer", "").capitalize()
             a = f"{a}Serializer"
             self.name = a
         return super().save(*args, **kwargs)
@@ -99,7 +101,7 @@ class ViewsInfo(models.Model):
         if not self.pk:
             a = "".join([i.capitalize() for i in re.split('-|_| ', self.name)])
             if "view" in a.lower():
-                a = a.lower().replace("view", "")
+                a = a.lower().replace("view", "").capitalize()
             a = f"{a}View"
             self.name = a
         return super().save(*args, **kwargs)

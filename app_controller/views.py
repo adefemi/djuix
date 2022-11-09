@@ -1,4 +1,3 @@
-from functools import partial
 from app_controller.services.generateModelComponents import GenerateModelComponents
 from app_controller.services.write_model import WriteToModel
 from app_controller.services.write_serilizer import WriteToSerializer
@@ -54,6 +53,14 @@ class ModelInfoView(ModelViewSet):
     
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
+        normalized_data = Helper.normalizer_request(request.data)
+        
+        # check field changes
+        self.check_field_addition(instance, normalized_data)
+        self.check_same_field_names(normalized_data)
+        self.check_slugification(normalized_data)
+        self.check_field_changes(instance, normalized_data)
+        
         serialized_data = self.get_serializer(data=request.data, instance=instance, partial=True)
         serialized_data.is_valid(raise_exception=True)
         serialized_data.save()
@@ -66,6 +73,145 @@ class ModelInfoView(ModelViewSet):
         active_app.project.save()
         
         return Response("Model update", status=201)
+    
+    @staticmethod
+    def check_field_changes(model_instance, request_data):
+        current_fields = model_instance.field_properties["fields"]
+        new_fields = request_data["field_properties"]["fields"]
+        
+        existing_field_names = {}
+        for field in current_fields:
+            existing_field_names[field["name"]] = field
+        
+        modify_fields = {}
+        for field in new_fields:
+            t_data = existing_field_names.get(field["name"], None)
+            if t_data and t_data["field_type"] == field["field_type"]:
+                modify_fields[field["name"]] = field
+                del existing_field_names[field["name"]]
+                
+        formatted_model_name = model_instance.name.lower()
+                
+        # check fields using the old fields
+        ModelInfoView.check_string_rep(existing_field_names, model_instance, modify_fields, formatted_model_name)
+        ModelInfoView.check_serializer_fields(existing_field_names, model_instance, modify_fields)
+        ModelInfoView.check_implement_search_fields(existing_field_names, model_instance, modify_fields, formatted_model_name)
+        
+    @staticmethod
+    def check_implement_search_fields(existing_field_names, model_instance, modify_fields, formatted_model_name):
+        for key, value in existing_field_names.items():
+            app_views = ViewsInfo.objects.filter(app_id=model_instance.app.id)
+            for view in app_views:
+                possible_strings = [key, f'{formatted_model_name}.{key}']
+                implement_search = view.field_properties.get('implement_search', None)
+                if implement_search:
+                    fields = implement_search["search_fields"]
+                    for possible_string in possible_strings:
+                        if possible_string in fields:
+                            if not modify_fields.get(key, None):
+                                raise Exception(f"A modified field named was used in {view.name} implement search fields")
+                            else:
+                                if modify_fields["key"]["field_type"] in [ModelFieldTypes.ForeignKey, ModelFieldTypes.ManyToManyField, ModelFieldTypes.OneToOneField]:
+                                    raise Exception("Changing field type to a related field will affect {view.name} implement search fields")
+        
+    @staticmethod
+    def check_serializer_fields(existing_field_names, model_instance, modify_fields):
+        for key, value in existing_field_names.items():
+            model_serializers = model_instance.model_serializers.all()
+            for model_serializer in model_serializers:
+                meta = model_serializer.field_properties.get("meta", None)
+                if meta is not None:
+                    fields = meta.get("fields", None)
+                    if fields is not None:
+                        if "__all__" in fields:
+                            continue
+                        else:
+                            if key in fields:
+                                if not modify_fields.get(key, None):
+                                    raise Exception(f"A modified field named was used in the {model_serializer.name} serializer.")
+        
+    @staticmethod
+    def check_string_rep(existing_field_names, model_instance, modify_fields, formatted_model_name):
+        for key, value in existing_field_names.items():
+            model_string_rep = model_instance.field_properties.get("string_representation", [])
+            possible_strings = [key, f'{formatted_model_name}.{key}']
+            for possible_string in possible_strings:
+                if possible_string in model_string_rep:
+                    if not modify_fields.get(key, None):
+                        raise Exception("A modified field named was used in string representation for model")
+                    else:
+                        if modify_fields["key"]["field_type"] in [ModelFieldTypes.ForeignKey, ModelFieldTypes.ManyToManyField, ModelFieldTypes.OneToOneField]:
+                            raise Exception("Changing field type to a related field will affect string representation for model")
+                        
+            possible_string = f'{formatted_model_name}.{key}'
+            app_models = model_instance.app.app_models.all()
+            
+            for app_model in app_models:
+                model_string_rep = app_model.field_properties.get("string_representation", [])
+                
+                if possible_string in model_string_rep:
+                    if not modify_fields.get(key, None):
+                        raise Exception("A modified field named was used in string representation for model")
+                    else:
+                        if modify_fields["key"]["field_type"] in [ModelFieldTypes.ForeignKey, ModelFieldTypes.ManyToManyField, ModelFieldTypes.OneToOneField]:
+                            raise Exception("Changing field type to a related field will affect string representation for model")
+    
+    @staticmethod
+    def check_slugification(new_data):
+        new_fields = new_data["field_properties"]["fields"]
+        # check if there is a slug field in the fields
+        slug_fields = []
+        field_names = []
+        for field in new_fields:
+            if field["field_type"] == ModelFieldTypes.SlugField:
+                slug_fields.append(field)
+            else:
+                field_names.append(field["name"])
+                
+        for slug_field in slug_fields:
+            ref = slug_field["field_properties"]["field_reference"]
+            if not ref in field_names:
+                raise Exception("One or more slug field reference cannot be found.")
+                
+    @staticmethod
+    def check_same_field_names(new_data):
+        new_fields = new_data["field_properties"]["fields"]
+        
+        existing_field_names = []
+        for field in new_fields:
+            if field["name"] in existing_field_names:
+                raise Exception("Model field names cannot be repeated.")
+            
+            existing_field_names.append(field["name"])
+            
+    @staticmethod
+    def check_field_addition(model_instance, request_data):
+        has_migration = model_instance.has_created_migration
+        if not has_migration:
+            return
+        
+        current_fields = model_instance.field_properties["fields"]
+        new_fields = request_data["field_properties"]["fields"]
+        
+        if len(new_fields) > len(current_fields):
+            # new field what added, find the new field 
+            # store the name of existing fields in an array
+            existing_field_names = []
+            for field in current_fields:
+                existing_field_names.append(field["name"])
+            
+            # check which of the fields from the new fields in not in the existing fields names
+            new_field_content = []
+            for field in new_fields:
+                if field["name"] not in existing_field_names:
+                    new_field_content.append(field)
+                
+            # check if the new field is null or has a default value, if not then raise an exception that this will affect the migrations
+            for e in new_field_content:
+                field_props = e["field_properties"]
+                if not field_props.get("default", None) and not field_props.get("null", None):
+                    raise Exception("Adding a new field to an already migrated model requires you to specify either a default value or mark as nullable.")
+            
     
 class SerializerInfoView(ModelViewSet):
     queryset = SerializerInfo.objects.select_related("model_relation", "model_relation__app")

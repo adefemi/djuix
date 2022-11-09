@@ -16,6 +16,11 @@ class TerminalController(CommandTemplate):
         
     def get_settings_path(self):
         return f"{self.path}/{self.project_name}/{self.project_name}/"
+    
+    def handle_terminal_error(self, error):
+        raise Exception(error)
+        error_list = error.split(":")
+        raise Exception(error_list[len(error_list)-1])
 
     def create_project(self):
         DirectoryManager.check_if_path_exist(self.path)
@@ -31,7 +36,7 @@ class TerminalController(CommandTemplate):
         p.wait()
         [_, err] = p.communicate()
         if err:
-            raise Exception(err.decode())
+            self.handle_terminal_error(err.decode())
 
         return True
     
@@ -49,14 +54,14 @@ class TerminalController(CommandTemplate):
             p.wait()
             [_, err] = p.communicate()
             if err:
-                raise Exception(err.decode())
+                self.handle_terminal_error(err.decode())
         
         p = subprocess.Popen(["mkdir", project_name], cwd=self.path,
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         p.wait()
         [_, err] = p.communicate()
         if err:
-            raise Exception(err.decode())
+            self.handle_terminal_error(err.decode())
         
         self.path = f"{self.path}/{project_name}"
         
@@ -88,14 +93,13 @@ class TerminalController(CommandTemplate):
         p.wait()
         [_, err] = p.communicate()
         if err:
-            raise Exception(err.decode())
+            self.handle_terminal_error(err.decode())
         
         print("created virtual env")
         return True
 
-    def install_packages(self):
+    def install_packages(self, custom_packages=None):
         # upgrade pip first
-        
         command = f"{self.get_python_command()} -m pip install --upgrade pip"
         command_template = self.get_access_template(command)
 
@@ -103,11 +107,13 @@ class TerminalController(CommandTemplate):
         p.wait()
         [_, err] = p.communicate()
         if err:
-            raise Exception(err.decode())
+            self.handle_terminal_error(err.decode())
         print("updated pip")
         
+        packages_to_use = custom_packages if custom_packages is not None else PACKAGE_LIST
+        
         package_string_list = ""
-        for package in PACKAGE_LIST:
+        for package in packages_to_use:
             package_string_list += package["version"] + " "
             
         command = "pip install"
@@ -116,7 +122,7 @@ class TerminalController(CommandTemplate):
         p.wait()
         [_, err] = p.communicate()
         if err:
-            raise Exception(err.decode())
+            self.handle_terminal_error(err.decode())
         
         return True
 
@@ -130,7 +136,7 @@ class TerminalController(CommandTemplate):
         p.wait()
         [_, err] = p.communicate()
         if err:
-            raise Exception(err.decode())
+            self.handle_terminal_error(err.decode())
         print("created app")
 
         # create serializer.py and url.py files
@@ -161,5 +167,9 @@ class TerminalController(CommandTemplate):
 
         [_, err] = p.communicate()
         if err:
-            raise Exception(err.decode())
+            self.handle_terminal_error(err.decode())
+        
+        if p.returncode == 3:
+            raise Exception("We could not fulfill the request for the modification. We sugestions you provide a default value for fields just added")
+
         return True

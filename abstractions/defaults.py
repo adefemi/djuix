@@ -12,25 +12,49 @@ PROJECT_TEMPLATES = [
 PACKAGE_LIST = [
     {
         "name": "django",
-        "version": "django==3.2.13"
+        "version": "django==4.1.1"
     }, 
     {
         "name": "cors",
-        "version": "django-cors-headers==3.12.0"
+        "version": "django-cors-headers==3.13.0"
     },
     {
         "name": "rest_framework",
-        "version": "djangorestframework==3.13.1"
+        "version": "djangorestframework==3.14.0"
     },
     {
         "name": "pillow",
-        "version": "Pillow==9.1.1"
+        "version": "Pillow==9.2.0"
     }
 ]
+
+OPTIONAL_PACKAGES = {
+    "boto": {
+        "name": "boto",
+        "version": "boto3==1.24.84"
+    },
+    "django_storages": {
+        "name": "django_storages",
+        "version": "django-storages==1.13.1"
+    },
+    "cloudinary": {
+        "name": "cloudinary",
+        "version": "cloudinary==1.30.0"
+    },
+    "django_cloudinary": {
+        "name": "django-cloudinary-storage",
+        "version": "django-cloudinary-storage==0.3.0"
+    },
+    "psycopg2": {
+        "name": "psycopg2-binary",
+        "version": "psycopg2-binary==2.9.3"
+    }
+}
 
 SETTINGS_INFO = [
     {
         "name": "ENVIRONMENT SETUP",
+        "tag": "ENVIRONMENT",
         "properties": [
             {
                 "name": "Environment",
@@ -57,30 +81,33 @@ SETTINGS_INFO = [
                 "key": "LANGUAGE_CODE",
                 "options": {
                     "en-us": "en-us",
-                }
+                },
+                "is_required": True,
             },
             {
                 "name": "Timezone",
                 "key": "TIME_ZONE",
                 "options": {
                     "UTC": "'UTC'",
-                }
+                },
+                "is_required": True,
             },
             {
                 "name": "USE TZ",
                 "key": "USE_TZ",
                 "value": "",
-                "is_boolean": True
+                "is_boolean": True,
+                "is_required": True,
             },
         ]
     },
     {
         "name": "DATABASE",
-        "tag": "DATABASES",
+        "tag": "DATABASE",
         "properties": [
             {
                 "name": "Engine",
-                "key": "ENGINE",
+                "key": "engine",
                 "options": {
                     "Postgres": "postgres",
                     "Sqlite": "sqlite",
@@ -88,28 +115,38 @@ SETTINGS_INFO = [
             },
         ],
         "context": {
-            "sqlite": None,
             "postgres": [
                 {
-                    "name": "name",
+                    "name": "DB Name",
                     "key": "DB_NAME",
-                    "value": ""
+                    "value": "",
+                    "is_required": True,
                 },
                 {
-                    "name": "password",
-                    "key": "DB_PASSWORD",
-                    "is_secure": True,
-                    "value": ""
+                    "name": "DB User",
+                    "key": "DB_USER",
+                    "value": "",
+                    "is_required": True,
                 },
                 {
-                    "name": "host",
+                    "name": "DB Host",
                     "key": "DB_HOST",
                     "value": "",
+                    "is_required": True,
                 },
                 {
-                    "name": "port",
+                    "name": "DB Port",
                     "key": "DB_PORT",
                     "value": "",
+                    "is_number": True,
+                    "is_required": True,
+                },
+                {
+                    "name": "DB Password",
+                    "key": "DB_PASSWORD",
+                    "is_secure": True,
+                    "value": "",
+                    "is_required": True,
                 },
             ]
         }
@@ -120,7 +157,7 @@ SETTINGS_INFO = [
         "properties": [
             {
                 "name": "Engine",
-                "key": "ENGINE",
+                "key": "engine",
                 "options": {
                     "None": "none",
                     "AWS": "aws",
@@ -135,77 +172,102 @@ SETTINGS_INFO = [
                     "key": "AWS_ACCESS_KEY_ID",
                     "is_secure": True,
                     "value": "",
+                    "is_required": True,
                 },
                 {
                     "name": "Secret key ID",
                     "key": "AWS_SECRET_ACCESS_KEY",
                     "is_secure": True,
                     "value": "",
+                    "is_required": True,
                 },
                 {
                     "name": "Storage bucket name",
                     "key": "AWS_STORAGE_BUCKET_NAME",
                     "value": "",
+                    "is_required": True,
                 },
             ],
             "cloudinary": [
                 {
                     "name": "Cloud name",
                     "key": "CLOUD_NAME",
-                    "value": ""
+                    "value": "",
+                    "is_required": True,
                 },
                 {
                     "name": "Api key",
                     "key": "API_KEY",
                     "is_secure": True,
                     "value": "",
+                    "is_required": True,
                 },
                 {
                     "name": "Api secret",
                     "key": "API_SECRET",
                     "is_secure": True,
                     "value": "",
+                    "is_required": True,
                 },
             ]
         }
     },
     {
-        "name": "EMAIL",
+        "name": "EMAIL SETUP",
         "tag": "EMAIL",
         "properties": [
             {
-                "name": "Host",
-                "key": "HOST",
-                "value": "",
+                "name": "Engine",
+                "key": "engine",
+                "options": {
+                    "None": "none",
+                    "Set credentials": "email",
+                }
             },
-            {
-                "name": "Host User",
-                "key": "HOST_USER",
-                "value": "",
-            },
-            {
-                "name": "Password",
-                "key": "PASSWORD",
-                "value": "",
-                "is_secure": True,
-            },
-            {
-                "name": "Port",
-                "key": "PORT",
-                "value": "",
-            },
-            {
-                "name": "Default from email",
-                "key": "DEFAULT_FROM_EMAIL",
-                "value": "",
-            },
-            {
-                "name": "USE TLS",
-                "key": "USE_TLS",
-                "value": "",
-                "is_boolean": True
-            },
-        ]
+        ],
+        "context": {
+            "email": [
+                {
+                    "name": "Host",
+                    "key": "HOST",
+                    "value": "",
+                    "is_required": True,
+                },
+                {
+                    "name": "Host User",
+                    "key": "HOST_USER",
+                    "value": "",
+                    "is_required": True,
+                },
+                {
+                    "name": "Password",
+                    "key": "PASSWORD",
+                    "value": "",
+                    "is_secure": True,
+                    "is_required": True,
+                },
+                {
+                    "name": "Port",
+                    "key": "PORT",
+                    "value": "",
+                    "is_number": True,
+                    "is_required": True,
+                },
+                {
+                    "name": "Default from email",
+                    "key": "DEFAULT_FROM_EMAIL",
+                    "value": "",
+                    "is_required": True,
+                },
+                {
+                    "name": "USE TLS",
+                    "key": "USE_TLS",
+                    "value": "",
+                    "is_boolean": True,
+                    "is_required": True,
+                },
+            ]
+        }
     }
 ]
 
