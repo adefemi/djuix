@@ -5,6 +5,7 @@ from abstractions.defaults import PROJECT_TEMPLATES, SERIALIZER_REQUIREMENT, SET
 
 class GetProjectTemplate(ModelViewSet):
     http_method_names = ("get",)
+    permission_classes = []
     
     def get_queryset(self):
         return None
@@ -15,6 +16,7 @@ class GetProjectTemplate(ModelViewSet):
 
 class GetSettingInfo(ModelViewSet):
     http_method_names = ("get",)
+    permission_classes = []
     
     def get_queryset(self):
         return None
@@ -25,6 +27,7 @@ class GetSettingInfo(ModelViewSet):
     
 class GetModelFieldInfo(ModelViewSet):
     http_method_names = ("get",)
+    permission_classes = []
     
     def get_queryset(self):
         return None
@@ -35,6 +38,7 @@ class GetModelFieldInfo(ModelViewSet):
 
 class GetSerializerFieldInfo(ModelViewSet):
     http_method_names = ("get",)
+    permission_classes = []
     
     def get_queryset(self):
         return None

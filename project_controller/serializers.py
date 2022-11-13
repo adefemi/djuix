@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Project, App, ProjectSettings
+from user_management.serializers import CustomUserSerializer
 
 
 class ProjectSettingSerializer(serializers.ModelSerializer):
@@ -23,6 +24,8 @@ class AppSerializer(serializers.ModelSerializer):
 class ProjectSerializer(serializers.ModelSerializer):
     delete_if_project_exist = serializers.BooleanField(write_only=True, default=False)
     project_apps = AppSerializer(many=True, read_only=True)
+    owner = CustomUserSerializer(read_only=True)
+    owner_id = serializers.CharField(write_only=True)
 
     class Meta:
         model = Project

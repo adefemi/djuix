@@ -19,7 +19,7 @@ class ModelInfoView(ModelViewSet):
     
     def get_queryset(self):
         query = self.request.query_params
-        queryset = self.queryset
+        queryset = self.queryset.filter(app__project__owner_id=self.request.user.id)
         
         if query.get("get_by_app_id", None) is not None:
             id = query["get_by_app_id"]
@@ -219,7 +219,7 @@ class SerializerInfoView(ModelViewSet):
     
     def get_queryset(self):
         query = self.request.query_params
-        queryset = self.queryset
+        queryset = self.queryset.filter(app__project__owner_id=self.request.user.id)
         
         if query.get("get_by_app_id", None) is not None:
             id = query["get_by_app_id"]
@@ -257,7 +257,7 @@ class ViewInfoView(ModelViewSet):
     
     def get_queryset(self):
         query = self.request.query_params
-        queryset = self.queryset
+        queryset = self.queryset.filter(app__project__owner_id=self.request.user.id)
         
         if query.get("get_by_app_id", None) is not None:
             id = query["get_by_app_id"]
@@ -424,7 +424,7 @@ class UrlInfoView(ModelViewSet):
     
     def get_queryset(self):
         query = self.request.query_params
-        queryset = self.queryset
+        queryset = self.queryset.filter(app__project__owner_id=self.request.user.id)
         
         if query.get("get_by_app_id", None) is not None:
             id = query["get_by_app_id"]

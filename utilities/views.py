@@ -1,4 +1,3 @@
-from sys import prefix
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from abstractions.enums import ModelFieldTypes
@@ -17,7 +16,7 @@ class GetTopViewGetOptions(ModelViewSet):
     def list(self, request, *args, **kwargs):
         serializer_id = kwargs["serializer_id"]
         
-        serializer_obj = SerializerInfo.objects.get(id=serializer_id)
+        serializer_obj = SerializerInfo.objects.get(id=serializer_id, app__project__owner_id=request.user.id)
         model_obj = serializer_obj.model_relation
         app_obj = serializer_obj.app
         
@@ -61,7 +60,7 @@ class GetSimilarViewKeys(ModelViewSet):
     def list(self, request, *args, **kwargs):
         serializer_id = kwargs["serializer_id"]
         
-        serializer_obj = SerializerInfo.objects.get(id=serializer_id)
+        serializer_obj = SerializerInfo.objects.get(id=serializer_id, app__project__owner_id=request.user.id)
         model_obj = serializer_obj.model_relation
         app_obj = serializer_obj.app
         
@@ -104,7 +103,7 @@ class GetSearchableFields(ModelViewSet):
     def list(self, request, *args, **kwargs):
         serializer_id = kwargs["serializer_id"]
         
-        serializer_obj = SerializerInfo.objects.get(id=serializer_id)
+        serializer_obj = SerializerInfo.objects.get(id=serializer_id, app__project__owner_id=request.user.id)
         model_obj = serializer_obj.model_relation
         app_obj = serializer_obj.app
         
@@ -142,7 +141,7 @@ class GetLookupFieldOptions(ModelViewSet):
     def list(self, request, *args, **kwargs):
         serializer_id = kwargs["serializer_id"]
         
-        serializer_obj = SerializerInfo.objects.get(id=serializer_id)
+        serializer_obj = SerializerInfo.objects.get(id=serializer_id, app__project__owner_id=request.user.id)
         model_obj = serializer_obj.model_relation
         
         fields = []
@@ -176,7 +175,7 @@ class GetAppAttributes(ModelViewSet):
     
     def list(self, request, app_id):
         try:
-            active_app = App.objects.get(id=app_id)
+            App.objects.get(id=app_id, project__owner_id=request.user.id)
             self.app_id = app_id
         except App.DoesNotExist:
             raise Exception("App with specified id does not exist")

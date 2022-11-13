@@ -2,9 +2,11 @@ from django.db import models
 from django.utils.text import slugify
 
 from abstractions.defaults import DEFAULT_PROJECT_DIR
+from user_management.models import CustomUser
 
 
 class Project(models.Model):
+    owner = models.ForeignKey(CustomUser, related_name='project_owner', on_delete=models.CASCADE)
     name = models.CharField(max_length=50, unique=True)
     formatted_name = models.CharField(max_length=50, unique=True, editable=False, null=True)
     description = models.TextField(null=True, blank=True)

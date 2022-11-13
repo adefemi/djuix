@@ -12,5 +12,13 @@ def custom_exception_handler(exc, context):
 
     print(traceback.format_exc())
     exc_list = str(exc).split("DETAIL: ")
+    
+    status_code = 403
+    auth_error = "Authentication issue." in exc_list
+    
+    if auth_error:
+        status_code = 401
+        
+    print("my status: ", status_code)
 
-    return Response({"error": exc_list[-1]}, status=403)
+    return Response({"error": exc_list[-1]}, status=status_code)

@@ -2,6 +2,7 @@ from rest_framework.viewsets import ModelViewSet
 from abstractions.defaults import OPTIONAL_PACKAGES, PACKAGE_LIST
 from app_controller.models import ModelInfo
 from controllers.directory_controller import DirectoryManager
+from djuix.utils import get_query
 from project_controller.models import ProjectSettings
 from project_controller.services.write_url import WriteProjectUrl
 from .services.write_settings_file import WriteSettings
@@ -21,8 +22,25 @@ class ProjectView(ModelViewSet):
     serializer_class = ProjectSerializer
     queryset = Project.objects.all()
     lookup_field = "slug"
+    
+    def get_queryset(self):
+        data = self.request.query_params.dict()
+        data.pop("page", None)
+        keyword = data.pop("keyword", None)
+
+        results = self.queryset.filter(owner_id=self.request.user.id).filter(**data)
+
+        if keyword:
+            search_fields = (
+                "name", "formatted_name"
+            )
+            query = get_query(keyword, search_fields)
+            results = results.filter(query)
+        
+        return results
 
     def create(self, request, *args, **kwargs):
+        active_user = request.user
         data = Helper.normalizer_request(request.data)
         template = data.pop("template", None)
         
@@ -34,6 +52,7 @@ class ProjectView(ModelViewSet):
             if proj:
                 raise Exception(f"A project with name '{data['name']}' already exists")   
                 
+        data["owner_id"] = active_user.id
         serializer = self.serializer_class(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.validated_data.pop("delete_if_project_exist", None)
@@ -92,7 +111,7 @@ class AppView(ModelViewSet):
     
     def get_queryset(self):
         query = self.request.query_params
-        queryset = self.queryset
+        queryset = self.queryset.filter(project__owner_id=self.request.user.id)
         
         if query.get("get_app_by_project_id", None) is not None:
             id = query["get_app_by_project_id"]
@@ -117,7 +136,9 @@ class RunMigrationView(ModelViewSet):
         data = self.get_serializer(data=request.data)
         data.is_valid(raise_exception=True)
         
-        active_project = Project.objects.get(id=data.validated_data["project_id"])
+        active_project = Project.objects.get(id=data.validated_data["project_id"], owner_id=request.user.id)
+        if not active_project:
+            raise Exception("Project not found")
         
         terminal_controller = TerminalController(active_project.project_path, active_project.formatted_name)
         
@@ -137,8 +158,12 @@ class SettingsView(ModelViewSet):
     queryset = ProjectSettings.objects.select_related("project")
     lookup_field = "project__slug"
     
+    def get_queryset(self):
+        return super().get_queryset().filter(project__owner_id=self.request.user.id)
+    
     def retrieve(self, request, *args, **kwargs):
         self.settings_obj = self.get_object().properties
+        
         final_res = {}
         self.handle_get_environment(final_res)
         self.handle_get_database(final_res)
@@ -210,6 +235,7 @@ class SettingsView(ModelViewSet):
         # keys to deal with: Environment, database, filestorage, email
         request_body = Helper.normalizer_request(request.data)
         active_setting = self.get_object()
+
         self.settings_obj = active_setting.properties
         self.c_packages = PACKAGE_LIST
         
@@ -383,8 +409,12 @@ class GetProjectUrls(ModelViewSet):
     http_method_names = ("get",)
     lookup_field = "slug"
     
+    def get_queryset(self):
+        return super().get_queryset().filter(owner_id=self.request.user.id)
+    
     def retrieve(self, request, *args, **kwargs):
         active_project = self.get_object()
+        
         project_apps = active_project.project_apps.all()
         
         urls_array_dict = {

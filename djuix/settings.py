@@ -43,12 +43,14 @@ INSTALLED_APPS = [
     'project_controller',
     'app_controller',
     'requirements_abstraction',
+    'user_management',
     'utilities'
 ]
 
 REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'djuix.custom_methods.custom_exception_handler',
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    'DEFAULT_PERMISSION_CLASSES': ['djuix.auth_middleware.IsAuthenticatedCustom', ],
     "PAGE_SIZE": 20
 }
 
@@ -64,6 +66,8 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'djuix.urls'
+
+AUTH_USER_MODEL = "user_management.CustomUser"
 
 TEMPLATES = [
     {
