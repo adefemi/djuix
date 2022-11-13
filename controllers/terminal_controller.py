@@ -19,11 +19,17 @@ class TerminalController(CommandTemplate):
     
     def handle_terminal_error(self, error):
         raise Exception(error)
-        error_list = error.split(":")
-        raise Exception(error_list[len(error_list)-1])
 
     def create_project(self):
-        DirectoryManager.check_if_path_exist(self.path)
+        status = DirectoryManager.check_if_path_exist(self.path)
+        if not status:
+            # this is a new project
+            username = self.path.split("/")[-1] # this is the unique username
+            temp_path = self.path
+            self.path = self.path.removesuffix(f"/{username}")
+            # create a new folder with the username
+            self.create_project_folder(username)
+            self.path = temp_path
         self.check_if_project_already_exist()
         self.create_project_folder()
         self.create_env()
@@ -43,8 +49,8 @@ class TerminalController(CommandTemplate):
     def define_project_standard_name(self):
         return self.project_name + "_main"
     
-    def create_project_folder(self):
-        project_name = self.define_project_standard_name()
+    def create_project_folder(self, name=None):
+        project_name = name or self.define_project_standard_name()
         
         if os.path.exists(self.get_project_full_path()):
             command_template = "rm -r {}"

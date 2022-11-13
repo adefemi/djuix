@@ -1,7 +1,7 @@
 from rest_framework.viewsets import ModelViewSet
 from .serializers import (
     AuthSerializer, CustomUser, UpdatePasswordSerializer,
-    CustomUserSerializer, UserActivities, UserActivitiesSerializer
+    CustomUserSerializer, UserActivities, UserActivitiesSerializer, CreateUserSerializer
 )
 from rest_framework.response import Response
 from rest_framework import status
@@ -20,7 +20,7 @@ def add_user_activity(user, action):
 class CreateUserView(ModelViewSet):
     http_method_names = ["post"]
     queryset = CustomUser.objects.all()
-    serializer_class = AuthSerializer
+    serializer_class = CreateUserSerializer
     permission_classes = []
 
     def create(self, request):

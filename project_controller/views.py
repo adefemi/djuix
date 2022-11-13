@@ -1,5 +1,5 @@
 from rest_framework.viewsets import ModelViewSet
-from abstractions.defaults import OPTIONAL_PACKAGES, PACKAGE_LIST
+from abstractions.defaults import DEFAULT_PROJECT_DIR, OPTIONAL_PACKAGES, PACKAGE_LIST
 from app_controller.models import ModelInfo
 from controllers.directory_controller import DirectoryManager
 from djuix.utils import get_query
@@ -44,11 +44,13 @@ class ProjectView(ModelViewSet):
         data = Helper.normalizer_request(request.data)
         template = data.pop("template", None)
         
+        default_project_path = DEFAULT_PROJECT_DIR + "/" + active_user.username.lower()
+        
         delete_if_project_exist = data.get("delete_if_project_exist", False)
         if delete_if_project_exist:
-            Project.objects.filter(name=data["name"]).delete() 
+            Project.objects.filter(name=data["name"], project_path=default_project_path).delete() 
         else:
-            proj = Project.objects.filter(name=data["name"])
+            proj = Project.objects.filter(name=data["name"], project_path=default_project_path)
             if proj:
                 raise Exception(f"A project with name '{data['name']}' already exists")   
                 
@@ -61,7 +63,7 @@ class ProjectView(ModelViewSet):
         project_path = serializer.data["project_path"]
         active_project = self.queryset.get(id=serializer.data["id"])
 
-        terminal_controller = TerminalController(project_path, active_project.formatted_name, delete_if_project_exist)
+        terminal_controller = TerminalController(default_project_path, active_project.formatted_name, delete_if_project_exist)
 
         try:
             terminal_controller.create_project()
@@ -69,6 +71,7 @@ class ProjectView(ModelViewSet):
             active_project.project_path = project_path
             active_project.save()
             print("project created")
+            print(project_path)
         except Exception as e:
             self.queryset.filter(id=serializer.data["id"]).delete()
             print(e)

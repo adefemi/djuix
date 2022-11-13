@@ -21,4 +21,4 @@ def custom_exception_handler(exc, context):
         
     print("my status: ", status_code)
 
-    return Response({"error": exc_list[-1]}, status=status_code)
+    return Response({"error": exc_list[-1][0:200] + "..." if len(exc_list[-1]) > 200 else ""}, status=status_code)

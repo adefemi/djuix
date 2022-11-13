@@ -7,10 +7,10 @@ from user_management.models import CustomUser
 
 class Project(models.Model):
     owner = models.ForeignKey(CustomUser, related_name='project_owner', on_delete=models.CASCADE)
-    name = models.CharField(max_length=50, unique=True)
-    formatted_name = models.CharField(max_length=50, unique=True, editable=False, null=True)
+    name = models.CharField(max_length=50)
+    formatted_name = models.CharField(max_length=50, editable=False, null=True)
     description = models.TextField(null=True, blank=True)
-    project_path = models.TextField(default=DEFAULT_PROJECT_DIR, editable=False)
+    project_path = models.TextField(default=DEFAULT_PROJECT_DIR, editable=True)
     slug = models.SlugField(max_length=50, null=True, blank=True, editable=True)
     run_migration = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -21,6 +21,7 @@ class Project(models.Model):
 
     class Meta:
         ordering = ("-created_at", )
+        unique_together = ("project_path", "name")
         
     def save(self, *args, **kwargs):
         self.formatted_name = self.name.lower().replace(" ", "_")
