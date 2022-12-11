@@ -1,6 +1,7 @@
 from app_controller.services.writer_main import WriterMain
-from djuix.functions import write_to_file
+from djuix.functions import send_process_message, write_to_file
 from project_controller.models import ProjectSettings
+from abstractions.defaults import auth_app_name
 
 
 class WriteSettings(WriterMain):
@@ -18,11 +19,14 @@ class WriteSettings(WriterMain):
         self.write_setting()
         
     def update_setting(self, obj):
+        if self.project.project_auth:
+            obj["INSTALLED_APPS"]["items"].append(auth_app_name)
         self.settings_object = obj
         self.write_setting()
         
     def write_setting(self):
         print("writing project setting...")
+        send_process_message(self.project.owner.id, "writing project setting...")
         
         self.check_for_import()
         if self.content_data:

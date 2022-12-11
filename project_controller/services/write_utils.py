@@ -1,5 +1,5 @@
 from controllers.command_template import CommandTemplate
-from djuix.functions import write_to_file
+from djuix.functions import send_process_message, write_to_file
 
 
 class WriteUtils:
@@ -12,6 +12,7 @@ class WriteUtils:
         
     def write_utils(self):
         print("Writing project utilities")
+        send_process_message(self.project.owner.id, "writing some project utilities...")
         self.content_data += "import re\n"
         self.content_data += "from django.db.models import Q\n"
         

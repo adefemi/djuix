@@ -1,5 +1,6 @@
 from controllers.command_template import CommandTemplate
 from djuix.functions import write_to_file
+from abstractions.defaults import auth_app_name
 
 
 class WriteProjectUrl(CommandTemplate):
@@ -13,6 +14,8 @@ class WriteProjectUrl(CommandTemplate):
         print("writing project urls...")
         content_data = "from django.urls import path, include\n"
         content_data += "from django.contrib import admin\n"
+        content_data += "from django.conf.urls.static import static\n"
+        content_data += "from django.conf import settings\n"
         content_data += "\n\n"
         
         content_data += "urlpatterns = [\n"
@@ -21,8 +24,11 @@ class WriteProjectUrl(CommandTemplate):
         apps = self.project.project_apps.all()
         for app in apps:
             content_data += f"\tpath('{app.formatted_name}-path/', include('{app.formatted_name}.urls')),\n"
+            
+        if self.project.project_auth:
+            content_data += f"\tpath('auth-path/', include('{auth_app_name}.urls')),\n"
         
-        content_data += "]\n"
+        content_data += "]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)\n"
         
         p_name = self.project.formatted_name
         

@@ -1,6 +1,15 @@
 from rest_framework import serializers
-from .models import Project, App, ProjectSettings
+from .models import Project, App, ProjectSettings, ProjectAuth
 from user_management.serializers import CustomUserSerializer
+
+
+class ProjectAuthSerializer(serializers.ModelSerializer):
+    project = serializers.CharField(read_only=True)
+    project_id = serializers.CharField(write_only=True)
+    
+    class Meta:
+        model = ProjectAuth
+        fields = ("project","username_field")
 
 
 class ProjectSettingSerializer(serializers.ModelSerializer):
@@ -26,6 +35,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     project_apps = AppSerializer(many=True, read_only=True)
     owner = CustomUserSerializer(read_only=True)
     owner_id = serializers.CharField(write_only=True)
+    project_auth = ProjectAuthSerializer(read_only=True)
 
     class Meta:
         model = Project

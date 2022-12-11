@@ -3,17 +3,21 @@ from abstractions.defaults import DEFAULT_PROJECT_DIR, OPTIONAL_PACKAGES, PACKAG
 from app_controller.models import ModelInfo
 from controllers.directory_controller import DirectoryManager
 from djuix.utils import get_query
-from project_controller.models import ProjectSettings
+from project_controller.services.write_auth import WriteAuth
 from project_controller.services.write_url import WriteProjectUrl
 from .services.write_settings_file import WriteSettings
 
 from project_controller.services.write_utils import WriteUtils
 
 from .services.process_app_creation import process_app_creation
-from .serializers import Project, ProjectSerializer, App, AppSerializer, ProjectSettingSerializer, RunMigrationSerializer
+from .serializers import (
+    Project, ProjectSerializer, App, AppSerializer, ProjectSettings, ProjectAuth,
+    ProjectSettingSerializer, RunMigrationSerializer, ProjectAuthSerializer
+)
 from controllers.terminal_controller import TerminalController
 from rest_framework.response import Response
 from djuix.helper import Helper
+from djuix.functions import send_process_message
 
 from project_templates.blog.process import CreateBlogTemplate
 
@@ -60,18 +64,22 @@ class ProjectView(ModelViewSet):
         serializer.validated_data.pop("delete_if_project_exist", None)
         serializer.save()
         
+        send_process_message(active_user.id, "initializing project...")
         project_path = serializer.data["project_path"]
         active_project = self.queryset.get(id=serializer.data["id"])
 
-        terminal_controller = TerminalController(default_project_path, active_project.formatted_name, delete_if_project_exist)
+        terminal_controller = TerminalController(
+            default_project_path, 
+            active_project.formatted_name, 
+            delete_if_project_exist, 
+            active_user.id)
 
         try:
             terminal_controller.create_project()
             project_path = terminal_controller.path
             active_project.project_path = project_path
             active_project.save()
-            print("project created")
-            print(project_path)
+            
         except Exception as e:
             self.queryset.filter(id=serializer.data["id"]).delete()
             print(e)
@@ -92,13 +100,17 @@ class ProjectView(ModelViewSet):
         
         if template == "blog":
             print("start creating blog template")
+            send_process_message(active_user.id, "creating blog template...")
             try:
                 CreateBlogTemplate(active_project)
+                send_process_message(active_user.id, "creating blog template migrations...")
                 terminal_controller.run_migration()
                 ModelInfo.objects.filter(app__project_id=active_project.id).update(has_created_migration=True)
             except Exception as e:
                 active_project.delete()
                 raise Exception(e)
+            
+        send_process_message(active_user.id, "All done!", 0)
 
         return Response(self.serializer_class(active_project).data, status=201)
 
@@ -240,7 +252,7 @@ class SettingsView(ModelViewSet):
         active_setting = self.get_object()
 
         self.settings_obj = active_setting.properties
-        self.c_packages = PACKAGE_LIST
+        self.c_packages = active_setting.packages
         
         env_data = request_body.get("environment", None)
         if env_data:
@@ -262,7 +274,7 @@ class SettingsView(ModelViewSet):
         active_setting.save()
         
         terminal_controller = TerminalController(active_setting.project.project_path, active_setting.project.formatted_name)
-        terminal_controller.install_packages(self.c_packages)
+        terminal_controller.install_packages(self.c_packages, active_setting.project)
         
         write_settings = WriteSettings(active_setting.project)
         write_settings.update_setting(self.get_object().properties)
@@ -406,6 +418,7 @@ class SettingsView(ModelViewSet):
             self.settings_obj.pop('EMAIL_HOST_PASSWORD', None)
             self.settings_obj.pop('DEFAULT_FROM_EMAIL', None)
 
+
 class GetProjectUrls(ModelViewSet):
     serializer_class = ProjectSerializer
     queryset = Project.objects.all()
@@ -443,3 +456,40 @@ class GetProjectUrls(ModelViewSet):
                 
         return Response(urls_array_dict)
         
+
+class SetProjectAuth(ModelViewSet):
+    serializer_class = ProjectAuthSerializer
+    queryset = ProjectAuth.objects.all()
+    
+    def get_queryset(self):
+        return super().get_queryset().filter(project__owner_id=self.request.user.id)
+    
+    def create(self, request, *args, **kwargs):
+        
+        validated_data = self.serializer_class(data=request.data)
+        validated_data.is_valid(raise_exception=True)
+        
+        validated_data.save()
+        
+        active_project = Project.objects.get(id=validated_data.validated_data['project_id'])
+        
+        write_auth = WriteAuth(active_project)
+        write_auth.setup_auth()
+        
+        return Response("Auth created successfully", status=201)
+        
+    def delete(self, request, *args, **kwargs):
+        active_project = self.get_object().project
+        
+        super().delete(request, *args, **kwargs)
+        
+        write_auth = WriteAuth(active_project)
+        write_auth.delete_auth()
+        
+        return Response("Auth deleted successfully")
+        
+        
+        
+        
+        
+    

@@ -48,6 +48,10 @@ OPTIONAL_PACKAGES = {
     "psycopg2": {
         "name": "psycopg2-binary",
         "version": "psycopg2-binary==2.9.3"
+    },
+    "pyJwt": {
+        "name": "PyJWT",
+        "version": "PyJWT==1.7.1"
     }
 }
 
@@ -413,3 +417,5 @@ SERIALIZER_REQUIREMENT = {
         },
     }
 }
+
+auth_app_name = "AuthController"

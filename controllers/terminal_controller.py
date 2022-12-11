@@ -3,16 +3,19 @@ import subprocess
 import shlex
 from abstractions.defaults import PACKAGE_LIST
 from controllers.command_template import CommandTemplate, OsType
+from djuix.functions import send_process_message
+from project_controller.models import Project
 from .directory_controller import DirectoryManager
 
 
 class TerminalController(CommandTemplate):
 
-    def __init__(self, path, project_name, delete_if_project_exist=False):
+    def __init__(self, path, project_name, delete_if_project_exist=False, project_id=None):
         super().__init__(OsType.mac)
         self.path = self.transform_path(path) 
         self.project_name = project_name
         self.delete_if_project_exist = delete_if_project_exist
+        self.project_id = project_id
         
     def get_settings_path(self):
         return f"{self.path}/{self.project_name}/{self.project_name}/"
@@ -33,7 +36,8 @@ class TerminalController(CommandTemplate):
         self.check_if_project_already_exist()
         self.create_project_folder()
         self.create_env()
-        self.install_packages()
+        if self.project_id:
+            self.install_packages(PACKAGE_LIST, Project.objects.get(id=self.project_id))
         
         command = 'django-admin startproject'
 
@@ -50,6 +54,8 @@ class TerminalController(CommandTemplate):
         return self.project_name + "_main"
     
     def create_project_folder(self, name=None):
+        if self.project_id:
+            send_process_message(self.project_id, "creating project folder...")
         project_name = name or self.define_project_standard_name()
         
         if os.path.exists(self.get_project_full_path()):
@@ -72,6 +78,7 @@ class TerminalController(CommandTemplate):
         self.path = f"{self.path}/{project_name}"
         
         print("created project folder")
+        
         return True
     
     def check_if_project_already_exist(self):
@@ -104,7 +111,9 @@ class TerminalController(CommandTemplate):
         print("created virtual env")
         return True
 
-    def install_packages(self, custom_packages=None):
+    def install_packages(self, custom_packages=None, project=None):
+        if self.project_id:
+            send_process_message(self.project_id, "installing required packages...", 0)
         # upgrade pip first
         command = f"{self.get_python_command()} -m pip install --upgrade pip"
         command_template = self.get_access_template(command)
@@ -129,6 +138,18 @@ class TerminalController(CommandTemplate):
         [_, err] = p.communicate()
         if err:
             self.handle_terminal_error(err.decode())
+            
+        # freeze out the required packages
+        command = "pip freeze > requirements.txt"
+        command_template = self.get_access_template(command)
+        p = subprocess.Popen(command_template, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        p.wait()
+        [_, err] = p.communicate()
+        if err:
+            self.handle_terminal_error(err.decode())
+            
+        project.project_setting.packages = custom_packages
+        project.project_setting.save()
         
         return True
 

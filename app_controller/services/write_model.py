@@ -16,48 +16,29 @@ class WriteToModel(WriterMain):
     def write_model(self):
         # define the base structure
         print("writing model")
+        has_slug_import = False
         self.content_data = "from django.db import models\n"
-        self.check_for_import()
+        for model in self.models:
+            field_properties = model.field_properties
+            fields = field_properties["fields"]
+            self.check_for_import(fields, has_slug_import, self.content_data)
 
         for model in self.models:
             self.content_data += f"\n\nclass {model.name}(models.Model):\n"
             field_properties = model.field_properties
             fields = field_properties["fields"]
-            self.has_slug = False
-            self.has_save_method = False
+            has_save_method = False
 
-            for field_data in fields:    
-                field_attrs = field_data.get("field_properties", None)
-                attrs_string = ""
-                
-                if field_data["field_type"] == ModelFieldTypes.SlugField:
-                    self.has_slug = True
-                    self.slug_data = {
-                        "field_name": field_data['name'],
-                        "field_to_use": field_data["field_properties"].pop('field_reference'),
-                    }
-                    field_attrs["unique"] = "True"
-                
-                if field_attrs:
-                    related_model_name = field_attrs.pop("related_model_name", None)
-                    if related_model_name:
-                        attrs_string += f"'{related_model_name}', "
-                    for key,value in field_attrs.items():
-                        if key in ("related_name", "default", "help_text", "upload_to"):
-                            value = f"'{value}'"
-                        attrs_string += f"{key}={value}, "
-                if field_attrs:
-                    attrs_string = attrs_string[:-2]
-                        
-                self.content_data += f"\t{self.get_formatted_name(field_data['name'])} = models.{field_data['field_type']}({attrs_string})\n"                    
+            has_slug, slug_data, data = self.handle_model_fields(fields, self.content_data, self.get_formatted_name)   
+            self.content_data = data               
             
             has_created_at = field_properties.get('has_created_at', False)
             if has_created_at:
-                self.format_has_created_date()
+                self.content_data = self.format_has_created_date(self.content_data)
                 
             has_updated_at = field_properties.get('has_updated_at', False)
             if has_updated_at:
-                self.format_has_updated_date()
+                self.content_data = self.format_has_updated_date(self.content_data)
                 
             self.content_data += "\n"
             
@@ -65,17 +46,17 @@ class WriteToModel(WriterMain):
             
             meta = field_properties.get("meta", None)
             if meta:
-                self.format_meta(meta)
+                self.content_data = self.format_meta(self.content_data, meta)
                 
             string_rep = field_properties.get("string_representation", None)
             if string_rep:
-                self.format_string_representation(string_rep)
+                self.content_data = self.format_string_representation(self.content_data, string_rep)
                 
-            if self.has_slug:
-                self.format_slug()
+            if has_slug:
+                self.content_data = self.format_slug(has_save_method, self.content_data, slug_data)
                 
             if self.has_save_method:
-                self.finalize_save()
+                self.content_data = self.finalize_save(self.content_data)
                 
 
         self.write_to_file('model')
@@ -103,43 +84,86 @@ class WriteToModel(WriterMain):
         
         self.write_to_file(None, "admin.py")
     
-    def format_meta(self, meta_data):
+    @staticmethod
+    def format_meta(data, meta_data):
         print("writing meta data")
-        self.content_data += f"\tclass Meta:\n"
+        data += f"\tclass Meta:\n"
         for k, v in meta_data.items():
-            self.content_data += f"\t\t{k} = {v}\n"
-            
-    def format_has_created_date(self):
+            data += f"\t\t{k} = {v}\n"
+        return data
+    
+    @staticmethod        
+    def format_has_created_date(data):
         print("writing created_at")
-        self.content_data += f"\tcreated_at = models.DateTimeField(auto_now_add=True)\n"
-        
-    def format_has_updated_date(self):
+        data += f"\tcreated_at = models.DateTimeField(auto_now_add=True)\n"
+        return data
+    
+    @staticmethod    
+    def format_has_updated_date(data):
         print("writing updated_at")
-        self.content_data += f"\tupdated_at = models.DateTimeField(auto_now=True)\n"
-        
-    def format_string_representation(self, string_arr):
+        data += f"\tupdated_at = models.DateTimeField(auto_now=True)\n"
+        return data
+    
+    @staticmethod    
+    def format_string_representation(data, string_arr):
         print("writing string representation")
-        self.content_data += f"\tdef __str__(self):\n"
+        data += f"\tdef __str__(self):\n"
         string_attr = " - ".join('{self.'+ f'{x}' +'}' for x in string_arr)
-        self.content_data += '\t\treturn f"'+string_attr+'"\n'
-        
-    def format_slug(self):
+        data += '\t\treturn f"'+string_attr+'"\n'
+        return data
+    
+    @staticmethod    
+    def format_slug(has_save_method, data, slug_data):
         print("writing slug")
-        if not self.has_save_method:
-            self.has_save_method = True
-            self.content_data += f"\tdef save(self, *args, **kwargs):\n"
-        field_name = self.slug_data["field_name"]
-        field_to_use = self.slug_data["field_to_use"]
-        self.content_data += f"\t\tself.{field_name} = slugify(self.{field_to_use}, allow_unicode=True)\n"
-        
-    def finalize_save(self):
-        self.content_data += f"\t\tsuper().save(*args, **kwargs)\n"
-        
-    def check_for_import(self):
-        for model in self.models:
-            field_properties = model.field_properties
-            fields = field_properties["fields"]
-            for field_data in fields:    
-                if field_data["field_type"] == ModelFieldTypes.SlugField:
-                    self.content_data += "from django.utils.text import slugify\n"
+        if not has_save_method:
+            has_save_method = True
+            data += f"\tdef save(self, *args, **kwargs):\n"
+        field_name = slug_data["field_name"]
+        field_to_use = slug_data["field_to_use"]
+        data += f"\t\tself.{field_name} = slugify(self.{field_to_use}, allow_unicode=True)\n"
+        return data
+    
+    @staticmethod    
+    def finalize_save(data):
+        data += f"\t\tsuper().save(*args, **kwargs)\n"
+        return data
+      
+    @staticmethod  
+    def check_for_import(fields, slug_import, data):
+        for field_data in fields:    
+            if field_data["field_type"] == ModelFieldTypes.SlugField and not slug_import:
+                data += "from django.utils.text import slugify\n"
+                slug_import = True
+                
+        return data
   
+    @staticmethod
+    def handle_model_fields(fields, data, get_formatted_name_func):
+        has_slug = False
+        slug_data = None
+        for field_data in fields:    
+            field_attrs = field_data.get("field_properties", None)
+            attrs_string = ""
+            
+            if field_data["field_type"] == ModelFieldTypes.SlugField:
+                has_slug = True
+                slug_data = {
+                    "field_name": field_data['name'],
+                    "field_to_use": field_data["field_properties"].pop('field_reference'),
+                }
+                field_attrs["unique"] = "True"
+            
+            if field_attrs:
+                related_model_name = field_attrs.pop("related_model_name", None)
+                if related_model_name:
+                    attrs_string += f"'{related_model_name}', "
+                for key,value in field_attrs.items():
+                    if key in ("related_name", "default", "help_text", "upload_to"):
+                        value = f"'{value}'"
+                    attrs_string += f"{key}={value}, "
+            if field_attrs:
+                attrs_string = attrs_string[:-2]
+                    
+            data += f"\t{get_formatted_name_func(field_data['name'])} = models.{field_data['field_type']}({attrs_string})\n"
+            
+            return has_slug, slug_data, data                    
