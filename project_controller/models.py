@@ -33,6 +33,10 @@ class ProjectSettings(models.Model):
     project = models.OneToOneField(
         Project, related_name="project_setting", on_delete=models.CASCADE)
     properties = models.JSONField(null=True, blank=True)
+    packages = models.JSONField(null=True, blank=True)
+    
+    def __str__(self):
+        return f"{self.project.name} settings"
 
 
 class App(models.Model):
@@ -54,3 +58,16 @@ class App(models.Model):
     def save(self, *args, **kwargs):
         self.formatted_name = self.name.lower().replace(" ", "_")
         super().save(*args, **kwargs)
+        
+        
+class ProjectAuth(models.Model):
+    project = models.OneToOneField(Project, related_name="project_auth", on_delete=models.CASCADE)
+    properties = models.JSONField(null=True, blank=True)
+    username_field = models.CharField(max_length=10, default="email", choices=(("email","email"), ("username","username")))
+    access_expiry = models.PositiveIntegerField(default=5)
+    refresh_expiry = models.PositiveIntegerField(default=365)
+    
+    def __str__(self):
+        return f"{self.project.name} auth"
+    
+    
