@@ -166,4 +166,4 @@ class WriteToModel(WriterMain):
                     
             data += f"\t{get_formatted_name_func(field_data['name'])} = models.{field_data['field_type']}({attrs_string})\n"
             
-            return has_slug, slug_data, data                    
+        return has_slug, slug_data, data                    

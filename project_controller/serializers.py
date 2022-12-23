@@ -9,7 +9,7 @@ class ProjectAuthSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = ProjectAuth
-        fields = ("project","username_field")
+        fields = "__all__"
 
 
 class ProjectSettingSerializer(serializers.ModelSerializer):

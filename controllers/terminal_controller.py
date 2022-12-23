@@ -1,7 +1,7 @@
 import os
 import subprocess
 import shlex
-from abstractions.defaults import PACKAGE_LIST
+from abstractions.defaults import OPTIONAL_PACKAGES, PACKAGE_LIST
 from controllers.command_template import CommandTemplate, OsType
 from djuix.functions import send_process_message
 from project_controller.models import Project
@@ -10,12 +10,13 @@ from .directory_controller import DirectoryManager
 
 class TerminalController(CommandTemplate):
 
-    def __init__(self, path, project_name, delete_if_project_exist=False, project_id=None):
+    def __init__(self, path, project, delete_if_project_exist=False, active_user_id=None):
         super().__init__(OsType.mac)
-        self.path = self.transform_path(path) 
-        self.project_name = project_name
+        self.path = self.transform_path(path)
+        self.project = project 
+        self.project_name = project.formatted_name
         self.delete_if_project_exist = delete_if_project_exist
-        self.project_id = project_id
+        self.active_user = active_user_id
         
     def get_settings_path(self):
         return f"{self.path}/{self.project_name}/{self.project_name}/"
@@ -36,8 +37,8 @@ class TerminalController(CommandTemplate):
         self.check_if_project_already_exist()
         self.create_project_folder()
         self.create_env()
-        if self.project_id:
-            self.install_packages(PACKAGE_LIST, Project.objects.get(id=self.project_id))
+        if self.active_user:
+            self.install_packages()
         
         command = 'django-admin startproject'
 
@@ -54,8 +55,8 @@ class TerminalController(CommandTemplate):
         return self.project_name + "_main"
     
     def create_project_folder(self, name=None):
-        if self.project_id:
-            send_process_message(self.project_id, "creating project folder...")
+        if self.active_user:
+            send_process_message(self.active_user, "creating project folder...")
         project_name = name or self.define_project_standard_name()
         
         if os.path.exists(self.get_project_full_path()):
@@ -111,9 +112,9 @@ class TerminalController(CommandTemplate):
         print("created virtual env")
         return True
 
-    def install_packages(self, custom_packages=None, project=None):
-        if self.project_id:
-            send_process_message(self.project_id, "installing required packages...", 0)
+    def install_packages(self):
+        if self.active_user:
+            send_process_message(self.active_user, "installing required packages...", 0)
         # upgrade pip first
         command = f"{self.get_python_command()} -m pip install --upgrade pip"
         command_template = self.get_access_template(command)
@@ -125,7 +126,13 @@ class TerminalController(CommandTemplate):
             self.handle_terminal_error(err.decode())
         print("updated pip")
         
-        packages_to_use = custom_packages if custom_packages is not None else PACKAGE_LIST
+        packages_to_use = PACKAGE_LIST
+        try:
+            if self.project.project_auth:
+                packages_to_use.append(OPTIONAL_PACKAGES['pyJwt'])
+        except:
+            pass
+                
         
         package_string_list = ""
         for package in packages_to_use:
@@ -147,9 +154,6 @@ class TerminalController(CommandTemplate):
         [_, err] = p.communicate()
         if err:
             self.handle_terminal_error(err.decode())
-            
-        project.project_setting.packages = custom_packages
-        project.project_setting.save()
         
         return True
 

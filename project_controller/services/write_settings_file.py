@@ -19,8 +19,6 @@ class WriteSettings(WriterMain):
         self.write_setting()
         
     def update_setting(self, obj):
-        if self.project.project_auth:
-            obj["INSTALLED_APPS"]["items"].append(auth_app_name)
         self.settings_object = obj
         self.write_setting()
         
@@ -40,6 +38,10 @@ class WriteSettings(WriterMain):
             
             if k == "DATABASES":
                 self.set_database_key(v["properties"])
+                continue
+            
+            if k == "REST_FRAMEWORK":
+                self.set_rest_framework_key(v)
                 continue
         
             value = ""
@@ -83,12 +85,32 @@ class WriteSettings(WriterMain):
         for k,v in props.items():
             if k == "key": continue
             
-            if k == "PORT":
+            if k == "PORT" or (k == "NAME" and "sqlite" in v):
                 v = f"{v}"
             else:
                 v = f'"{v}"'
             self.content_data += f"\t\t'{k}': {v},\n"
         self.content_data += "\t}\n}\n"
+        
+    def set_rest_framework_key(self, props):
+        self.content_data += "\nREST_FRAMEWORK = {\n\t"
+        
+        def get_values(obj):
+            if obj.get("values", None):
+                self.content_data += "(\n"
+                for i in obj["values"]:
+                    self.content_data += f"\t\t'{i}'"
+                self.content_data += "\n\t)"
+            else:
+                val = obj["value"]
+                self.content_data += f"'{val}'"
+                
+        
+        for i in props["properties"]:
+            self.content_data += f"'{i['key']}': "
+            get_values(i)
+            
+        self.content_data += "\n}\n"
         
     def check_for_import(self):
         print("writing view imports")

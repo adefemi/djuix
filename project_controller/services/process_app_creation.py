@@ -13,7 +13,7 @@ def process_app_creation(data):
         
         project = app.project
 
-        terminal_controller = TerminalController(project.project_path, project.formatted_name,)
+        terminal_controller = TerminalController(project.project_path, project)
 
         try:
             terminal_controller.create_app(app.formatted_name)

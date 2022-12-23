@@ -13,6 +13,7 @@ class Project(models.Model):
     project_path = models.TextField(default=DEFAULT_PROJECT_DIR, editable=True)
     slug = models.SlugField(max_length=50, null=True, blank=True, editable=True)
     run_migration = models.BooleanField(default=False)
+    has_migration = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -30,10 +31,10 @@ class Project(models.Model):
         
 
 class ProjectSettings(models.Model):
+    
     project = models.OneToOneField(
         Project, related_name="project_setting", on_delete=models.CASCADE)
     properties = models.JSONField(null=True, blank=True)
-    packages = models.JSONField(null=True, blank=True)
     
     def __str__(self):
         return f"{self.project.name} settings"
@@ -66,6 +67,7 @@ class ProjectAuth(models.Model):
     username_field = models.CharField(max_length=10, default="email", choices=(("email","email"), ("username","username")))
     access_expiry = models.PositiveIntegerField(default=5)
     refresh_expiry = models.PositiveIntegerField(default=365)
+    default_auth = models.CharField(max_length=50, null=True, blank=True)
     
     def __str__(self):
         return f"{self.project.name} auth"

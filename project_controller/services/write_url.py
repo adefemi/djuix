@@ -25,8 +25,11 @@ class WriteProjectUrl(CommandTemplate):
         for app in apps:
             content_data += f"\tpath('{app.formatted_name}-path/', include('{app.formatted_name}.urls')),\n"
             
-        if self.project.project_auth:
-            content_data += f"\tpath('auth-path/', include('{auth_app_name}.urls')),\n"
+        try:
+            if self.project.project_auth:
+                content_data += f"\tpath('auth-path/', include('{auth_app_name}.urls')),\n"
+        except Exception:
+            pass
         
         content_data += "]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)\n"
         

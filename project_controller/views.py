@@ -70,7 +70,7 @@ class ProjectView(ModelViewSet):
 
         terminal_controller = TerminalController(
             default_project_path, 
-            active_project.formatted_name, 
+            active_project, 
             delete_if_project_exist, 
             active_user.id)
 
@@ -79,7 +79,6 @@ class ProjectView(ModelViewSet):
             project_path = terminal_controller.path
             active_project.project_path = project_path
             active_project.save()
-            
         except Exception as e:
             self.queryset.filter(id=serializer.data["id"]).delete()
             print(e)
@@ -105,6 +104,8 @@ class ProjectView(ModelViewSet):
                 CreateBlogTemplate(active_project)
                 send_process_message(active_user.id, "creating blog template migrations...")
                 terminal_controller.run_migration()
+                active_project.has_migration = True
+                active_project.save()
                 ModelInfo.objects.filter(app__project_id=active_project.id).update(has_created_migration=True)
             except Exception as e:
                 active_project.delete()
@@ -155,11 +156,12 @@ class RunMigrationView(ModelViewSet):
         if not active_project:
             raise Exception("Project not found")
         
-        terminal_controller = TerminalController(active_project.project_path, active_project.formatted_name)
+        terminal_controller = TerminalController(active_project.project_path, active_project)
         
         terminal_controller.run_migration()
         
         active_project.run_migration = False
+        active_project.has_migration = True
         active_project.save()
         
         # update project models on migration status
@@ -273,8 +275,8 @@ class SettingsView(ModelViewSet):
         active_setting.properties = self.settings_obj
         active_setting.save()
         
-        terminal_controller = TerminalController(active_setting.project.project_path, active_setting.project.formatted_name)
-        terminal_controller.install_packages(self.c_packages, active_setting.project)
+        terminal_controller = TerminalController(active_setting.project.project_path, active_setting.project)
+        terminal_controller.install_packages()
         
         write_settings = WriteSettings(active_setting.project)
         write_settings.update_setting(self.get_object().properties)
@@ -465,7 +467,6 @@ class SetProjectAuth(ModelViewSet):
         return super().get_queryset().filter(project__owner_id=self.request.user.id)
     
     def create(self, request, *args, **kwargs):
-        
         validated_data = self.serializer_class(data=request.data)
         validated_data.is_valid(raise_exception=True)
         
@@ -474,9 +475,29 @@ class SetProjectAuth(ModelViewSet):
         active_project = Project.objects.get(id=validated_data.validated_data['project_id'])
         
         write_auth = WriteAuth(active_project)
-        write_auth.setup_auth()
+        try:
+            write_auth.setup_auth()
+        except Exception as e:
+            ProjectAuth.objects.filter(project_id=active_project.id).delete()
+            raise Exception(e)
         
         return Response("Auth created successfully", status=201)
+    
+    def update(self, request, *args, **kwargs):
+        super().update(request, *args, **kwargs)
+        
+        active_obj = self.get_object()
+        
+        write_auth = WriteAuth(active_obj.project)
+        try:
+            write_auth.create_auth_model()
+            write_auth.create_auth_utitlties()
+            write_auth.finalize_process()
+        except Exception as e:
+            raise Exception(e)
+        
+        return Response("Auth updated successfully", status=201)
+        
         
     def delete(self, request, *args, **kwargs):
         active_project = self.get_object().project
