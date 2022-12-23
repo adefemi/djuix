@@ -323,6 +323,10 @@ class ViewInfoView(ModelViewSet):
         if has_lookup_field:
             field_properties["lookup_field"] = has_lookup_field
             
+        has_permission = normalized_data.get("permission", None)
+        if has_permission:
+            field_properties["permission"] = has_permission
+            
         can_create = True if not has_http_method_names or "post" in has_http_method_names else False
         can_update = True if not has_http_method_names or "patch" in has_http_method_names else False
         

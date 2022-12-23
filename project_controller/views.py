@@ -1,6 +1,7 @@
 from rest_framework.viewsets import ModelViewSet
 from abstractions.defaults import DEFAULT_PROJECT_DIR, OPTIONAL_PACKAGES, PACKAGE_LIST
 from app_controller.models import ModelInfo
+from app_controller.services.write_view import WriteToView
 from controllers.directory_controller import DirectoryManager
 from djuix.utils import get_query
 from project_controller.services.write_auth import WriteAuth
@@ -499,13 +500,28 @@ class SetProjectAuth(ModelViewSet):
         return Response("Auth updated successfully", status=201)
         
         
-    def delete(self, request, *args, **kwargs):
+    def destroy(self, request, *args, **kwargs):
         active_project = self.get_object().project
         
-        super().delete(request, *args, **kwargs)
+        super().destroy(request, *args, **kwargs)
         
-        write_auth = WriteAuth(active_project)
+        active_project = Project.objects.get(id=active_project.id)
+        
+        # get all apps and remove permissions for them
+        for i in active_project.project_apps.all():
+            for j in i.app_views.all():
+                props = j.field_properties
+                if props.get("permission", None):
+                    del props["permission"]
+                j.field_properties = props
+                j.save()
+            
+            WriteToView(i)
+        
+        write_auth = WriteAuth(active_project, True)
         write_auth.delete_auth()
+        
+        
         
         return Response("Auth deleted successfully")
         

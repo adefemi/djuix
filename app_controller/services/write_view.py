@@ -1,4 +1,5 @@
 from app_controller.services.writer_main import WriterMain
+from abstractions.defaults import auth_app_name
 
 class WriteToView(WriterMain):
     views = []
@@ -34,6 +35,8 @@ class WriteToView(WriterMain):
             if field_properties.get("get_similar_content", None) is not None:
                 self.implement_get_similar_content(field_properties["get_similar_content"])
                 
+            
+                
             if self.implemented_queryset:
                 self.finalize_queryset()
                 
@@ -66,14 +69,11 @@ class WriteToView(WriterMain):
         if props.get("lookup_field", None) is not None:
             view_attrs["lookup_field"] = f"'{props['lookup_field']}'"
             
+        if props.get("permission", None) is not None:
+            view_attrs["permission_classes"] = f"{props['permission']}"
+            
         if props.get("http_method_names", None) is not None:
             view_attrs["http_method_names"] = props["http_method_names"]
-            
-        if props.get("permission_classes", None) is not None:
-            perm_string = ", ".join(x for x in props["permission_classes"])
-            if len(props["permission_classes"]) < 2:
-                perm_string += ", "
-            view_attrs["permission_classes"] = f"({perm_string})"
             
         for k,v in view_attrs.items():
             self.content_data += f"\t{k} = {v}\n"
@@ -88,6 +88,8 @@ class WriteToView(WriterMain):
         
         if not self.implemented_queryset:
             self.content_data += f"\n\tdef get_queryset(self):\n"
+        else:
+            self.content_data += "\n"
             
         if self.implemented_queryset:
             result_key = "results"
@@ -104,27 +106,39 @@ class WriteToView(WriterMain):
         amount = obj.get("amount", None)
         search_id = obj["search_id"]
         related_key = obj["related_key"]
-        field_to_check = obj["field_to_check"]
+        field_to_check = obj.get("field_to_check", None)
         
         result_key = "self.queryset"
         
         if not self.implemented_queryset:
             self.content_data += f"\n\tdef get_queryset(self):\n"
+        else:
+            self.content_data += "\n"
             
         if self.implemented_queryset:
             result_key = "results"
             
         self.content_data += f"\t\t{search_id} = self.kwargs.get('{search_id}')\n"
-        self.content_data += f"\t\ttry:\n"
-        self.content_data += f"\t\t\titems = {result_key}.get({field_to_check}={search_id}).{related_key}.all()\n"
-        self.content_data += f"\t\texcept Exception as e:\n"
-        self.content_data += f"\t\t\t{result_key} = None\n"
-        
-        self.content_data += f"\t\tif {result_key} is not None:\n"
-        amount_string = ""
-        if amount:
-            amount_string = f"[:{amount}]"
-        self.content_data += f"\t\t\t{result_key} = {result_key}.filter({related_key}__{field_to_check}__in=[a.{field_to_check} for a in items]).exclude({field_to_check}={search_id}){amount_string}\n"
+        if field_to_check:
+            self.content_data += f"\t\ttry:\n"
+            self.content_data += f"\t\t\titems = {result_key}.get({field_to_check}={search_id}).{related_key}.all()\n"
+            self.content_data += f"\t\texcept Exception as e:\n"
+            self.content_data += f"\t\t\t{result_key} = None\n"
+            
+            self.content_data += f"\t\tif {result_key} is not None:\n"
+            amount_string = ""
+            if amount:
+                amount_string = f"[:{amount}]"
+            self.content_data += f"\t\t\t{result_key} = {result_key}.filter({related_key}__{field_to_check}__in=[a.{field_to_check} for a in items]).exclude({field_to_check}={search_id}){amount_string}\n"
+        else:
+            amount_string = ""
+            if amount:
+                amount_string = f"[:{amount}]"
+            self.content_data += f"\t\ttry:\n"
+            self.content_data += f"\t\t\t{related_key} = {result_key}.get(id={search_id}).{related_key}\n"
+            self.content_data += f"\t\t\t{result_key} = {result_key}.filter({related_key}={related_key}).exclude(id={search_id}){amount_string}\n"
+            self.content_data += f"\t\texcept Exception as e:\n"
+            self.content_data += f"\t\t\t{result_key} = None\n"
             
         self.content_data += f"\t\tresults = {result_key}\n"
             
@@ -164,7 +178,11 @@ class WriteToView(WriterMain):
         search_key = obj["search_key"]
         search_fields = obj["search_fields"]
         
-        self.content_data += f"\n\tdef get_queryset(self):\n"
+        if not self.implemented_queryset:
+            self.content_data += f"\n\tdef get_queryset(self):\n"
+        else:
+            self.content_data += "\n"
+            
         self.content_data += f"\t\tif self.request.method.lower() != 'get':\n"
         self.content_data += f"\t\t\treturn self.queryset\n"
         
@@ -261,6 +279,15 @@ class WriteToView(WriterMain):
                     
             if view.serializer_relation.name not in import_obj[key]:
                 import_obj[key].append(view.serializer_relation.name)
+                
+            if field_properties.get("permission", None) is not None:
+                if len(field_properties["permission"]) > 4:
+                    key = f"{auth_app_name}.methods"
+                    
+                    if not import_obj.get(key, None):
+                        import_obj[key] = []
+                        
+                    import_obj[key].append(field_properties["permission"].replace("[", "").replace("]", ""))
             
             if not self.has_count_q_for_search:
                 if field_properties.get("implement_search", None) is not None:

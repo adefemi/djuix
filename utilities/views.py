@@ -70,7 +70,7 @@ class GetSimilarViewKeys(ModelViewSet):
             if field["field_type"] in (ModelFieldTypes.FileField, ModelFieldTypes.ImageField):
                 continue
             if field.get("field_properties", None):
-                if field["field_properties"].get("unique", None) == "True":
+                if field["field_properties"].get("unique", None):
                     continue
                 
             temp_obj = {

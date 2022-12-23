@@ -11,12 +11,15 @@ from project_controller.services.write_url import WriteProjectUrl
 
 class WriteAuth(TerminalController):
 
-    def __init__(self, project):
+    def __init__(self, project, isDel=False):
         self.project = project
         super().__init__(project.project_path, project, False, project.owner.id)
-        self.project_auth = project.project_auth
+        if not isDel:
+            self.project_auth = project.project_auth
+            self.username_field = self.project.project_auth.username_field
         self.app_path = f"{self.path}/{self.project_name}/{auth_app_name}/"
-        self.username_field = self.project.project_auth.username_field
+        
+        self.isDel = isDel
 
     def setup_auth(self):
         self.clean_up()
@@ -49,7 +52,7 @@ class WriteAuth(TerminalController):
         send_process_message(self.project.owner.id, "All Done", 0)
 
     def delete_auth(self):
-        DirectoryManager.delete_directory(self.app_path)
+        self.clean_up()
 
         self.finalize_process()
 
@@ -233,7 +236,7 @@ class WriteAuth(TerminalController):
             attrs_string = ""
 
             for key, value in field_attrs.items():
-                if key is not "null":
+                if key != "null":
                     continue
                 attrs_string += f"required={not value}"
             data_content += f"\t{field_data['name']} = serializers.{field_data['field_type']}({attrs_string})\n"
@@ -370,13 +373,14 @@ class WriteAuth(TerminalController):
         # write settings file
         settings_c = WriteSettings(self.project)
         # update project settings
-        if auth_app_name not in self.project.project_setting.properties["INSTALLED_APPS"]["items"]:
-            self.project.project_setting.properties["INSTALLED_APPS"]["items"].append(
-                auth_app_name)
-            self.project.project_setting.properties["AUTH_USER_MODEL"] = {
-                "value": f"{auth_app_name}.{self.custom_username}",
-                "is_string": True
-            }
+        if not self.isDel:
+            if auth_app_name not in self.project.project_setting.properties["INSTALLED_APPS"]["items"]:
+                self.project.project_setting.properties["INSTALLED_APPS"]["items"].append(
+                    auth_app_name)
+                self.project.project_setting.properties["AUTH_USER_MODEL"] = {
+                    "value": f"{auth_app_name}.{self.custom_username}",
+                    "is_string": True
+                }
 
         if self.project.project_setting.properties.get("REST_FRAMEWORK", None):
             props = self.project.project_setting.properties["REST_FRAMEWORK"]["properties"]
@@ -397,8 +401,9 @@ class WriteAuth(TerminalController):
                     }
                 )
         else:
-            if self.project_auth.default_auth:
-                self.project.project_setting.properties["REST_FRAMEWORK"] = {
+            if not self.isDel:
+                if self.project_auth.default_auth:
+                    self.project.project_setting.properties["REST_FRAMEWORK"] = {
                     "properties": [
                         {
                             "key": "DEFAULT_AUTHENTICATION_CLASSES",
