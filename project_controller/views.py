@@ -3,6 +3,8 @@ from abstractions.defaults import DEFAULT_PROJECT_DIR, OPTIONAL_PACKAGES, PACKAG
 from app_controller.models import ModelInfo
 from app_controller.services.write_view import WriteToView
 from controllers.directory_controller import DirectoryManager
+from djuix.auth_middleware import IsAuthenticatedSpecial
+from djuix.custom_methods import download_zip
 from djuix.utils import get_query
 from project_controller.services.write_auth import WriteAuth
 from project_controller.services.write_url import WriteProjectUrl
@@ -49,7 +51,7 @@ class ProjectView(ModelViewSet):
         data = Helper.normalizer_request(request.data)
         template = data.pop("template", None)
         
-        default_project_path = DEFAULT_PROJECT_DIR + "/" + active_user.username.lower()
+        default_project_path = DEFAULT_PROJECT_DIR
         
         delete_if_project_exist = data.get("delete_if_project_exist", False)
         if delete_if_project_exist:
@@ -255,7 +257,6 @@ class SettingsView(ModelViewSet):
         active_setting = self.get_object()
 
         self.settings_obj = active_setting.properties
-        self.c_packages = active_setting.packages
         
         env_data = request_body.get("environment", None)
         if env_data:
@@ -526,7 +527,19 @@ class SetProjectAuth(ModelViewSet):
         return Response("Auth deleted successfully")
         
         
-        
-        
+class LoadProject(ModelViewSet):
+    http_method_names = ("get",)
+    permission_classes = [IsAuthenticatedSpecial]
+    
+    def get_queryset(self):
+        return None
+    
+    def list(self, request, *args, **kwargs):
+        active_user = request.user
+        username = active_user.username.lower()
+        download_zip(DEFAULT_PROJECT_DIR, username, username)
+        active_user.removed_folder = False
+        active_user.save()
+        return Response("Loaded successfully")
         
     

@@ -6,7 +6,7 @@ from .serializers import (
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import authenticate
-from datetime import datetime
+from django.utils import timezone
 from djuix.utils import CustomPagination, get_access_token, get_query
 
 
@@ -57,13 +57,17 @@ class LoginView(ModelViewSet):
             )
 
         access = get_access_token({"user_id": user.id}, 1)
+        status = 200
 
-        user.last_login = datetime.now()
+        user.last_login = timezone.now()
         user.save()
+        
+        if user.removed_folder:
+            status = 202
 
         add_user_activity(user, "logged in")
 
-        return Response({"access": access})
+        return Response({"access": access}, status=status)
 
 
 class UpdatePasswordView(ModelViewSet):

@@ -1,7 +1,7 @@
 from calendar import c
 
 
-DEFAULT_PROJECT_DIR="/Users/adefemioseni/Desktop/djuix_test_projects"
+DEFAULT_PROJECT_DIR="/djuix-files"
 PROJECT_TEMPLATES = [
     {
         "name": "blog",

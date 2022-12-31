@@ -4,7 +4,6 @@ import shlex
 from abstractions.defaults import OPTIONAL_PACKAGES, PACKAGE_LIST
 from controllers.command_template import CommandTemplate, OsType
 from djuix.functions import send_process_message
-from project_controller.models import Project
 from .directory_controller import DirectoryManager
 
 
@@ -25,15 +24,7 @@ class TerminalController(CommandTemplate):
         raise Exception(error)
 
     def create_project(self):
-        status = DirectoryManager.check_if_path_exist(self.path)
-        if not status:
-            # this is a new project
-            username = self.path.split("/")[-1] # this is the unique username
-            temp_path = self.path
-            self.path = self.path.removesuffix(f"/{username}")
-            # create a new folder with the username
-            self.create_project_folder(username)
-            self.path = temp_path
+        self.check_user_folder()
         self.check_if_project_already_exist()
         self.create_project_folder()
         self.create_env()
@@ -51,13 +42,19 @@ class TerminalController(CommandTemplate):
 
         return True
     
+    def check_user_folder(self):
+        self.path = os.path.join(self.path, self.project.owner.username.lower())
+        path_exist = DirectoryManager.check_if_path_exist(self.path)
+        if not path_exist:
+            DirectoryManager.create_directory(self.path)
+    
     def define_project_standard_name(self):
         return self.project_name + "_main"
     
     def create_project_folder(self, name=None):
         if self.active_user:
             send_process_message(self.active_user, "creating project folder...")
-        project_name = name or self.define_project_standard_name()
+        project_name = self.define_project_standard_name()
         
         if os.path.exists(self.get_project_full_path()):
             command_template = "rm -r {}"
@@ -83,7 +80,7 @@ class TerminalController(CommandTemplate):
         return True
     
     def check_if_project_already_exist(self):
-        project_path = self.path + "/" + self.define_project_standard_name()
+        project_path = os.path.join(self.path, self.define_project_standard_name())
         if os.path.exists(project_path):
             if self.delete_if_project_exist:
                 DirectoryManager.delete_directory(project_path)
@@ -102,6 +99,9 @@ class TerminalController(CommandTemplate):
         return path.replace("\\", "/")
 
     def create_env(self):
+        if self.active_user:
+            send_process_message(self.active_user, "creating project env...")
+        print(self.path)
         p = subprocess.Popen(["virtualenv", self.get_env()], cwd=self.path,
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         p.wait()
@@ -113,18 +113,7 @@ class TerminalController(CommandTemplate):
         return True
 
     def install_packages(self):
-        if self.active_user:
-            send_process_message(self.active_user, "installing required packages...", 0)
-        # upgrade pip first
-        command = f"{self.get_python_command()} -m pip install --upgrade pip"
-        command_template = self.get_access_template(command)
-
-        p = subprocess.Popen(command_template, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        p.wait()
-        [_, err] = p.communicate()
-        if err:
-            self.handle_terminal_error(err.decode())
-        print("updated pip")
+        send_process_message(self.active_user, "installing required packages...", 0)
         
         packages_to_use = PACKAGE_LIST
         try:

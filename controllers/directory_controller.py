@@ -10,8 +10,9 @@ class DirectoryManager:
         self.path = path
         print(path)
 
-    def create_directory(self):
-        os.makedirs(self.path, exist_ok=True)
+    @staticmethod
+    def create_directory(path):
+        os.makedirs(path, exist_ok=True)
 
     def create_file(self, path_extension, control="w"):
         new_path = self.path+path_extension

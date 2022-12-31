@@ -249,6 +249,7 @@ class SerializerInfoView(ModelViewSet):
         WriteToSerializer(self.get_object().app)
         
         return Response("Model updated", status=200)
+
     
 class ViewInfoView(ModelViewSet):
     queryset = ViewsInfo.objects.select_related(

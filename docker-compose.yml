@@ -2,9 +2,25 @@ version: '3'
 
 services:
 
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    container_name: djuix_api
+    restart: unless-stopped
+    volumes:
+      - .:/djuix
+      - ${DJUIX_FILES}:/djuix-files
+    ports:
+      - "8000:8000"
+    networks:
+      - djuix_net
+    depends_on:
+      - postgres
+      - redis
+
   postgres:
     container_name: djuix_postgres_db
-    image: postgres
+    image: postgres:13.3
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -16,6 +32,36 @@ services:
     networks:
       - djuix_net
     restart: unless-stopped
+
+  redis:
+    image: "redis:alpine"
+    environment:
+      - REDIS_REPLICATION_MODE=master
+    restart: always
+    ports:
+      - "6379:6379"
+
+  celery:
+    build: .
+    command: celery -A djuix worker -l info
+    volumes:
+      - .:/djuix
+      - ${DJUIX_FILES}:/djuix-files
+    env_file:
+      - .env
+    depends_on:
+      - web
+
+  beats:
+    build: .
+    command: celery -A djuix beat -l info
+    volumes:
+      - .:/djuix
+      - ${DJUIX_FILES}:/djuix-files
+    env_file:
+      - .env
+    depends_on:
+      - web
 
 
 networks:
