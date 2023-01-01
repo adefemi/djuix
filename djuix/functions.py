@@ -3,6 +3,11 @@ from django.conf import settings
 import requests
 import json
 import time
+from django.template.loader import render_to_string
+from abstractions.defaults import app_email_name, support_mail
+from .tasks import send_email
+import random
+import string
 
     
 def write_to_file(path_data, file_name, content):
@@ -40,4 +45,22 @@ def send_process_message(project_id, message, wait_sec=1):
     time.sleep(wait_sec)
     return
         
+    
+def send_verification_email(user, token):
+    subject = "Welcome to Djuix.io"
+    html_message = render_to_string("verification.html", {
+        'username': user.username,
+        'verification_link': settings.EMAIL_VERIFICATION_LINK + f"?token={token}",
+        'support_mail': support_mail,
+        "app_email_name": app_email_name
+    })
+    
+    send_email.delay(subject, html_message, user.email)
+    
+
+def generate_random_string(length):
+    characters = string.ascii_letters + string.digits
+    random_string = ''.join(random.choices(characters, k=length))
+    return random_string
+    
     

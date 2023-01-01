@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 
 from pathlib import Path
 from decouple import config
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -73,7 +74,9 @@ AUTH_USER_MODEL = "user_management.CustomUser"
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            os.path.join(BASE_DIR, 'abstractions/email_templates')
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -181,10 +184,18 @@ DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 REDIS_HOST = config("REDIS_HOST")
 REDIS_PORT = config("REDIS_PORT")
 
-CELERY_BROKER_URL= f"redis://{REDIS_HOST}:{REDIS_PORT}"
+CELERY_BROKER_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}"
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 
 CELERY_IMPORTS = ['djuix.tasks']
+
+EMAIL_HOST = config("EMAIL_HOST")
+EMAIL_PORT = config("EMAIL_PORT")
+EMAIL_HOST_USER = config("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
+EMAIL_USE_TLS = config("EMAIL_USE_TLS")
+
+EMAIL_VERIFICATION_LINK = config("EMAIL_VERIFICATION_LINK")

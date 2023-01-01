@@ -5,10 +5,19 @@ from .models import CustomUser, UserActivities
 class AuthSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField()
-    
+
+
 class CreateUserSerializer(AuthSerializer):
     username = serializers.CharField()
-    
+
+
+class VerifyUserSerializer(serializers.Serializer):
+    token = serializers.CharField()
+
+
+class ResentEmailSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
 
 class UpdatePasswordSerializer(serializers.Serializer):
     user_id = serializers.CharField()

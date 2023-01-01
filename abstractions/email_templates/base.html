@@ -1,0 +1,66 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            line-height: 1.5;
+            color: #333333;
+        }
+
+        .container{
+            width: 100%;
+            padding: 20px;
+            background-color: rgb(231, 231, 231);
+        }
+
+        .container .content{
+            padding: 20px;
+            background-color: white;
+            max-width: 800px;
+            margin: 50px auto;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: bold;
+            color: #006699;
+            margin-bottom: 16px;
+        }
+
+        a {
+            color: #006699;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .lightText{
+            color: rgb(112, 112, 112);
+        }
+    </style>
+</head>
+
+<body>
+
+    
+
+    <div class="container">
+        <div class="content">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+</body>
+
+</html>

@@ -419,3 +419,5 @@ SERIALIZER_REQUIREMENT = {
 }
 
 auth_app_name = "AuthController"
+app_email_name = "Djuix.io Team"
+support_mail = "admin@djuix.io"

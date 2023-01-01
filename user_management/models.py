@@ -33,15 +33,16 @@ class CustomUserManager(BaseUserManager):
 
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
-    first_name = models.CharField(max_length=100, null=True)
+    first_name = models.CharField(max_length=100, null=True, blank=True)
     username = models.CharField(max_length=100, unique=True)
-    last_name = models.CharField(max_length=100, null=True)
+    last_name = models.CharField(max_length=100, null=True, blank=True)
     email = models.EmailField(unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
+    is_verified = models.BooleanField(default=False)
     last_login = models.DateTimeField(null=True)
     last_activity = models.DateTimeField(null=True)
     removed_folder = models.BooleanField(default=False)
@@ -70,3 +71,10 @@ class UserActivities(models.Model):
 
     def __str__(self):
         return f"{self.email} {self.action} on {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+    
+
+class VerificationUser(models.Model):
+    user = models.OneToOneField(CustomUser, related_name="is_under_verification", on_delete=models.CASCADE)
+    expiry = models.DateTimeField()
+    token = models.CharField(max_length=50)
+    

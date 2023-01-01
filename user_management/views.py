@@ -1,13 +1,17 @@
 from rest_framework.viewsets import ModelViewSet
 from .serializers import (
     AuthSerializer, CustomUser, UpdatePasswordSerializer,
-    CustomUserSerializer, UserActivities, UserActivitiesSerializer, CreateUserSerializer
+    CustomUserSerializer, UserActivities, UserActivitiesSerializer, CreateUserSerializer,
+    VerifyUserSerializer, ResentEmailSerializer
 )
+from .models import VerificationUser
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import authenticate
 from django.utils import timezone
 from djuix.utils import CustomPagination, get_access_token, get_query
+from djuix.functions import generate_random_string, send_verification_email
+from datetime import timedelta
 
 
 def add_user_activity(user, action):
@@ -16,6 +20,14 @@ def add_user_activity(user, action):
         email=user.email,
         action=action
     )
+    
+def send_v_mail(user):
+    v_token = generate_random_string(10)
+    expiry = timezone.now() + timedelta(days=1)
+    
+    VerificationUser.objects.create(user=user, expiry=expiry, token=v_token)
+    
+    send_verification_email(user, v_token)
     
 class CreateUserView(ModelViewSet):
     http_method_names = ["post"]
@@ -27,10 +39,12 @@ class CreateUserView(ModelViewSet):
         valid_request = self.serializer_class(data=request.data)
         valid_request.is_valid(raise_exception=True)
 
-        CustomUser.objects.create_user(**valid_request.validated_data)
+        user = CustomUser.objects.create_user(**valid_request.validated_data)
+        
+        send_v_mail(user)
 
         return Response(
-            {"success": "User created successfully"},
+            {"success": "User created successfully. We've sent a verification mail to your email address."},
             status=status.HTTP_201_CREATED
         )
 
@@ -55,19 +69,22 @@ class LoginView(ModelViewSet):
                 {"error": "Invalid email or password"},
                 status=status.HTTP_400_BAD_REQUEST
             )
+            
+        if not user.is_verified:
+            return Response("Access Denied", status=203)
 
         access = get_access_token({"user_id": user.id}, 1)
-        status = 200
+        mystatus = 200
 
         user.last_login = timezone.now()
         user.save()
         
         if user.removed_folder:
-            status = 202
+            mystatus = 202
 
         add_user_activity(user, "logged in")
 
-        return Response({"access": access}, status=status)
+        return Response({"access": access}, status=mystatus)
 
 
 class UpdatePasswordView(ModelViewSet):
@@ -130,3 +147,47 @@ class UserActivitiesView(ModelViewSet):
             results = results.filter(query)
         
         return results
+    
+
+class VerifyUser(ModelViewSet):
+    serializer_class = VerifyUserSerializer
+    http_method_names = ["post"]
+    permission_classes = []
+    
+    def create(self, request):
+        data = self.serializer_class(data=request.data)
+        data.is_valid(raise_exception=True)
+        
+        try:
+            current_time = timezone.now()
+            v_user = VerificationUser.objects.get(token=data.validated_data["token"], expiry__gt=current_time)
+            
+        except Exception:
+            raise Exception("Provided token is either invalid or expired")
+        
+        v_user.user.is_verified = True
+        v_user.user.save()
+        v_user.delete()
+        
+        return Response("Verification Successful")
+    
+
+class ResendVerification(ModelViewSet):
+    serializer_class = ResentEmailSerializer
+    http_method_names = ["post"]
+    permission_classes = []
+    
+    def create(self, request):
+        data = self.serializer_class(data=request.data)
+        data.is_valid(raise_exception=True)
+        
+        try:
+            user = CustomUser.objects.get(email=data.validated_data["email"])
+            VerificationUser.objects.filter(user=user).delete()
+            send_v_mail(user)
+        except Exception:
+            pass
+        
+        return Response("Verification mail sent successfully")
+    
+    

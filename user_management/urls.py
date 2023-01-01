@@ -1,7 +1,7 @@
 from django.urls import path, include
 from .views import (
     CreateUserView, LoginView, UpdatePasswordView, MeView,
-    UserActivitiesView
+    UserActivitiesView, VerifyUser, ResendVerification
 )
 
 from rest_framework.routers import DefaultRouter
@@ -13,6 +13,8 @@ router.register("login", LoginView, 'login')
 router.register("update-password", UpdatePasswordView, 'update password')
 router.register("me", MeView, 'me')
 router.register("activities-log", UserActivitiesView, 'activities log')
+router.register("verify-user", VerifyUser, 'verify-user')
+router.register("resend-verification", ResendVerification, 'resend-verification')
 
 urlpatterns = [
     path("", include(router.urls))
