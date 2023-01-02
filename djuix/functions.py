@@ -9,7 +9,7 @@ from .tasks import send_email
 import random
 import string
 
-    
+
 def write_to_file(path_data, file_name, content):
     try:
         directory_manager = DirectoryManager(path_data)
@@ -19,15 +19,16 @@ def write_to_file(path_data, file_name, content):
     except Exception as e:
         print(e)
         return False
-    
+
+
 def send_socket(process_type, projectId, message):
-    
+
     data = {
         "process_type": process_type,
         "id": projectId,
         "message": message
     }
-    
+
     headers = {
         'Content-Type': 'application/json',
     }
@@ -40,12 +41,12 @@ def send_socket(process_type, projectId, message):
 
 
 def send_process_message(project_id, message, wait_sec=1):
-    
+
     send_socket("project_creation", project_id, message)
     time.sleep(wait_sec)
     return
-        
-    
+
+
 def send_verification_email(user, token):
     subject = "Welcome to Djuix.io"
     html_message = render_to_string("verification.html", {
@@ -54,13 +55,23 @@ def send_verification_email(user, token):
         'support_mail': support_mail,
         "app_email_name": app_email_name
     })
-    
+
     send_email.delay(subject, html_message, user.email)
-    
+
+
+def send_password_reset(user, token):
+    subject = "Password reset request"
+    html_message = render_to_string("forgot_password.html", {
+        'username': user.username,
+        'reset_link': settings.PASSWORD_RESET_LINK + f"?token={token}",
+        'support_mail': support_mail,
+        "app_email_name": app_email_name
+    })
+
+    send_email.delay(subject, html_message, user.email)
+
 
 def generate_random_string(length):
     characters = string.ascii_letters + string.digits
     random_string = ''.join(random.choices(characters, k=length))
     return random_string
-    
-    

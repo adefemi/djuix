@@ -10,7 +10,7 @@ from rest_framework import status
 from django.contrib.auth import authenticate
 from django.utils import timezone
 from djuix.utils import CustomPagination, get_access_token, get_query
-from djuix.functions import generate_random_string, send_verification_email
+from djuix.functions import generate_random_string, send_verification_email, send_password_reset
 from datetime import timedelta
 
 
@@ -21,11 +21,14 @@ def add_user_activity(user, action):
         action=action
     )
     
-def send_v_mail(user):
+def send_v_mail(user, is_forget=False):
     v_token = generate_random_string(10)
     expiry = timezone.now() + timedelta(days=1)
     
     VerificationUser.objects.create(user=user, expiry=expiry, token=v_token)
+    
+    if is_forget:
+        return send_password_reset(user, v_token)
     
     send_verification_email(user, v_token)
     
@@ -44,7 +47,7 @@ class CreateUserView(ModelViewSet):
         send_v_mail(user)
 
         return Response(
-            {"success": "User created successfully. We've sent a verification mail to your email address."},
+            "User created successfully. We've sent a verification mail to your email address.",
             status=status.HTTP_201_CREATED
         )
 
@@ -106,11 +109,18 @@ class UpdatePasswordView(ModelViewSet):
         user = user[0]
 
         user.set_password(valid_request.validated_data["password"])
+        user.is_verified = True
         user.save()
+        
+        try:
+            user.is_under_verification.delete()
+        except Exception:
+            pass
+            
 
         add_user_activity(user, "updated password")
 
-        return Response({"success": "User password updated"})
+        return Response("User password updated")
 
 
 class MeView(ModelViewSet):
@@ -165,6 +175,9 @@ class VerifyUser(ModelViewSet):
         except Exception:
             raise Exception("Provided token is either invalid or expired")
         
+        if data.validated_data.get("is_forget", False):
+            return Response({"user_id": v_user.user.id})
+        
         v_user.user.is_verified = True
         v_user.user.save()
         v_user.delete()
@@ -184,10 +197,15 @@ class ResendVerification(ModelViewSet):
         try:
             user = CustomUser.objects.get(email=data.validated_data["email"])
             VerificationUser.objects.filter(user=user).delete()
-            send_v_mail(user)
+            is_forget = data.validated_data.get("is_forget", False)
+            send_v_mail(user, is_forget)
         except Exception:
             pass
         
-        return Response("Verification mail sent successfully")
+        message = "Verification mail sent successfully"
+        if is_forget:
+            message = "Reset instructions sent successfully"
+        
+        return Response(message)
     
     
