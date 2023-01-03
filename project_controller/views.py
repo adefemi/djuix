@@ -197,7 +197,7 @@ class SettingsView(ModelViewSet):
             "DEBUG": self.settings_obj["DEBUG"]["value"],
             "LANGUAGE_CODE": self.settings_obj["LANGUAGE_CODE"]["value"],
             "TIME_ZONE": self.settings_obj["TIME_ZONE"]["value"],
-            "USE_TZ": True if self.settings_obj["USE_TZ"]["value"] == "True" else False
+            "USE_TZ": True if self.settings_obj["USE_TZ"]["value"] == "True" else False,
         }
     
     def handle_get_database(self, obj):

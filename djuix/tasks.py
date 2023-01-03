@@ -26,7 +26,7 @@ def backup_project():
     from user_management.models import CustomUser
     
     # get users that has their last activity more that 1 hour and has not been backed up yet
-    one_hour_ago = timezone.now() - timedelta(minutes=10)
+    one_hour_ago = timezone.now() - timedelta(hours=3)
     users = CustomUser.objects.filter(last_activity__lt=one_hour_ago, removed_folder=False)
     
     for user in users:

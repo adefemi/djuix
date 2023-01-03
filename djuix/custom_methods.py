@@ -57,5 +57,8 @@ def download_zip(folder_parent_path, folder_name, file_name):
     subprocess.run(["mkdir", working_dir])
     subprocess.call(["unzip", "-o", extract_folder, '-d', working_dir])
     
-    os.remove(extract_folder)
+    try:
+        os.remove(extract_folder)
+    except Exception:
+        pass
     default_storage.delete(file_location)

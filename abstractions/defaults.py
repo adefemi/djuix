@@ -12,15 +12,15 @@ PROJECT_TEMPLATES = [
 PACKAGE_LIST = [
     {
         "name": "django",
-        "version": "django==4.1.1"
+        "version": "django==3.1.4"
     }, 
     {
         "name": "cors",
-        "version": "django-cors-headers==3.13.0"
+        "version": "django-cors-headers==3.6.0"
     },
     {
         "name": "rest_framework",
-        "version": "djangorestframework==3.14.0"
+        "version": "djangorestframework==3.13.1"
     },
     {
         "name": "pillow",
@@ -31,11 +31,11 @@ PACKAGE_LIST = [
 OPTIONAL_PACKAGES = {
     "boto": {
         "name": "boto",
-        "version": "boto3==1.24.84"
+        "version": "boto3==1.26.37"
     },
     "django_storages": {
         "name": "django_storages",
-        "version": "django-storages==1.13.1"
+        "version": "django-storages==1.10"
     },
     "cloudinary": {
         "name": "cloudinary",
@@ -47,11 +47,11 @@ OPTIONAL_PACKAGES = {
     },
     "psycopg2": {
         "name": "psycopg2-binary",
-        "version": "psycopg2-binary==2.9.3"
+        "version": "psycopg2-binary==2.9.5"
     },
     "pyJwt": {
         "name": "PyJWT",
-        "version": "PyJWT==1.7.1"
+        "version": "PyJWT==2.6.0"
     }
 }
 
@@ -163,7 +163,7 @@ SETTINGS_INFO = [
                 "name": "Engine",
                 "key": "engine",
                 "options": {
-                    "None": "none",
+                    "None": "",
                     "AWS": "aws",
                     "Cloudinary": "cloudinary",
                 }
@@ -224,7 +224,7 @@ SETTINGS_INFO = [
                 "name": "Engine",
                 "key": "engine",
                 "options": {
-                    "None": "none",
+                    "None": "",
                     "Set credentials": "email",
                 }
             },
@@ -417,6 +417,39 @@ SERIALIZER_REQUIREMENT = {
         },
     }
 }
+
+AUTH_URLS = [
+    {
+        "name": "Login User",
+        "link": "/auth-path/login",
+        "allowed_methods": ["POST"],
+        "description": "Login to the application using your 'Username field' and 'Password'"
+    },
+    {
+        "name": "Register User",
+        "link": "/auth-path/register",
+        "allowed_methods": ["POST"],
+        "description": "Sign up to the application, you will need to provide your 'Email, Username, Password and Extra Required field provided during Auth setup.'"
+    },
+    {
+        "name": "Refresh Token",
+        "link": "/auth-path/refresh",
+        "allowed_methods": ["POST"],
+        "description": "Get a new access token by providing the current Refresh token"
+    },
+    {
+        "name": "Active User",
+        "link": "/auth-path/me",
+        "allowed_methods": ["GET"],
+        "description": "Get logged in user information. You must provide the access token in the AUTHORIZARION header field"
+    },
+    {
+        "name": "Logout User",
+        "link": "/auth-path/logout",
+        "allowed_methods": ["GET"],
+        "description": "Invalidate the access token and logout the user. You must provide the access token in the AUTHORIZARION header field"
+    },
+]
 
 auth_app_name = "AuthController"
 app_email_name = "Djuix.io Team"

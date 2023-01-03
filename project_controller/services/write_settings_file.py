@@ -43,6 +43,10 @@ class WriteSettings(WriterMain):
             if k == "REST_FRAMEWORK":
                 self.set_rest_framework_key(v)
                 continue
+            
+            if k == "AUTH_PASSWORD_VALIDATORS":
+                self.set_auth_password_validators(v)
+                continue
         
             value = ""
             if v.get('value', None) is not None:
@@ -111,6 +115,15 @@ class WriteSettings(WriterMain):
             get_values(i)
             
         self.content_data += "\n}\n"
+    
+    def set_auth_password_validators(self, props):
+        self.content_data += "\nAUTH_PASSWORD_VALIDATORS = [\n"
+        
+        for i in props["items"]:
+            self.content_data += "\t{'NAME': " + f"'{i}'" + "},\n"
+        
+        self.content_data += "]\n"
+        
         
     def check_for_import(self):
         print("writing view imports")
@@ -138,7 +151,7 @@ class WriteSettings(WriterMain):
                     "parent": None,
                     "name": "os"
                 }
-            },
+            },           
             "SECRET_KEY": {
                 "value": "s_b=5%2n=!(dehix7vlv*r3*si)+kjob3ev=6k%kknv%sd#hk2",
                 "is_string": True
