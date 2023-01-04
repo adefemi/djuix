@@ -39,6 +39,8 @@ class TerminalController(CommandTemplate):
         [_, err] = p.communicate()
         if err:
             self.handle_terminal_error(err.decode())
+            
+        self.finalize_process()
 
         return True
     
@@ -121,7 +123,6 @@ class TerminalController(CommandTemplate):
                 packages_to_use.append(OPTIONAL_PACKAGES['pyJwt'])
         except:
             pass
-                
         
         package_string_list = ""
         for package in packages_to_use:
@@ -129,15 +130,6 @@ class TerminalController(CommandTemplate):
             
         command = "pip install"
         command_template = self.get_access_template(command, package_string_list)
-        p = subprocess.Popen(command_template, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        p.wait()
-        [_, err] = p.communicate()
-        if err:
-            self.handle_terminal_error(err.decode())
-            
-        # freeze out the required packages
-        command = "pip freeze > requirements.txt"
-        command_template = self.get_access_template(command)
         p = subprocess.Popen(command_template, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         p.wait()
         [_, err] = p.communicate()
@@ -192,4 +184,17 @@ class TerminalController(CommandTemplate):
         if p.returncode == 3:
             raise Exception("We could not fulfill the request for the modification. We sugestions you provide a default value for fields just added")
 
+        return True
+    
+    def finalize_process(self):
+        # freeze out the required packages
+        django_folder_path = os.path.join(self.path, self.project_name)
+        command = "pip freeze > requirements.txt"
+        command_template = self.get_access_template(command)
+        p = subprocess.Popen(command_template, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=django_folder_path)
+        p.wait()
+        [_, err] = p.communicate()
+        if err:
+            self.handle_terminal_error(err.decode())
+        
         return True

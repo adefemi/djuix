@@ -31,7 +31,7 @@ class WriteProjectUrl(CommandTemplate):
         except Exception:
             pass
         
-        content_data += "]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)\n"
+        content_data += "]+ static(settings.STATIC, document_root=settings.MEDIA_ROOT)\n"
         
         p_name = self.project.formatted_name
         

@@ -16,7 +16,6 @@ class DirectoryManager:
 
     def create_file(self, path_extension, control="w"):
         new_path = self.path+path_extension
-        print(new_path)
         try:
             if self.check_if_path_exist(new_path):
                 self.delete_file(new_path)
@@ -60,8 +59,6 @@ class DirectoryManager:
     @staticmethod
     def check_if_path_exist(path):
         if not os.path.exists(path):
-            print("path does not exist")
             return False
         
-        print("path exist")
         return True

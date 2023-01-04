@@ -25,9 +25,9 @@ def send_email(subject, html_msg, email):
 def backup_project():
     from user_management.models import CustomUser
     
-    # get users that has their last activity more that 1 hour and has not been backed up yet
-    one_hour_ago = timezone.now() - timedelta(hours=3)
-    users = CustomUser.objects.filter(last_activity__lt=one_hour_ago, removed_folder=False)
+    # get users that has their last activity more that 3 hours and has not been backed up yet
+    expiry = timezone.now() - timedelta(hours=3)
+    users = CustomUser.objects.filter(last_activity__lt=expiry, removed_folder=False)
     
     for user in users:
         

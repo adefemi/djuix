@@ -537,9 +537,10 @@ class LoadProject(ModelViewSet):
     def list(self, request, *args, **kwargs):
         active_user = request.user
         username = active_user.username.lower()
-        download_zip(DEFAULT_PROJECT_DIR, username, username)
-        active_user.removed_folder = False
-        active_user.save()
+        if active_user.removed_folder:
+            download_zip(DEFAULT_PROJECT_DIR, username, username)
+            active_user.removed_folder = False
+            active_user.save()
         return Response("Loaded successfully")
         
     
