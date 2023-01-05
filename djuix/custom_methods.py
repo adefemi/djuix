@@ -121,14 +121,13 @@ python3 manage.py createsuperuser
     dir_controller.write_file(create_super_admin_file, create_super_admin_content)
     
 def download_project(project):
-    from controllers.directory_controller import DirectoryManager
     from controllers.terminal_controller import TerminalController
     
-    dir_controller = DirectoryManager(project.project_path)
+    username = project.owner.username
     term_controller = TerminalController("", project)
     
     project_name = term_controller.define_project_standard_name()
-    object_name = f"{project_name}.zip"
+    object_name = f"{username}_{project_name}.zip"
     zip_filename = project.project_path + ".zip"
     
     shutil.make_archive(project.project_path, 'zip', project.project_path)

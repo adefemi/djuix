@@ -4,11 +4,12 @@ from app_controller.models import ModelInfo
 from app_controller.services.write_view import WriteToView
 from controllers.directory_controller import DirectoryManager
 from djuix.auth_middleware import IsAuthenticatedSpecial
-from djuix.custom_methods import download_zip
+from djuix.custom_methods import download_zip, setup_for_download, download_project
 from djuix.utils import get_query
 from project_controller.services.write_auth import WriteAuth
 from project_controller.services.write_url import WriteProjectUrl
 from .services.write_settings_file import WriteSettings
+from rest_framework.views import APIView
 
 from project_controller.services.write_utils import WriteUtils
 
@@ -538,9 +539,32 @@ class LoadProject(ModelViewSet):
         active_user = request.user
         username = active_user.username.lower()
         if active_user.removed_folder:
-            download_zip(DEFAULT_PROJECT_DIR, username, username)
+            try:
+                download_zip(DEFAULT_PROJECT_DIR, username, username)
+            except:
+                pass
             active_user.removed_folder = False
             active_user.save()
         return Response("Loaded successfully")
+    
+class DownloadProject(APIView):
+    
+    def get(self, request, id):
+        try:
+            active_project = Project.objects.get(id=id)
+        except Exception:
+            raise Exception("project not found")
+        
+        if not active_project.has_migration:
+            raise Exception("project not ready for download")
+        
+        setup_for_download(active_project)
+        
+        download_link = download_project(active_project)
+        
+        return Response({"link": download_link})
+        
+        
+    
         
     

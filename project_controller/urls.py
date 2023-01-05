@@ -1,5 +1,7 @@
 from rest_framework.routers import DefaultRouter
-from .views import ProjectView, AppView, SettingsView, RunMigrationView, GetProjectUrls, SetProjectAuth, LoadProject
+from .views import (
+    ProjectView, AppView, SettingsView, RunMigrationView, GetProjectUrls, 
+    SetProjectAuth, LoadProject, DownloadProject)
 from django.urls import include, path
 
 router = DefaultRouter(trailing_slash=False)
@@ -13,5 +15,6 @@ router.register("load-project", LoadProject, basename="load-project")
 
 
 urlpatterns = [
-    path("", include(router.urls))
+    path("", include(router.urls)),
+    path("download-project/<str:id>", DownloadProject.as_view(), name="download-project"),
 ]
