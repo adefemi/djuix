@@ -25,6 +25,10 @@ PACKAGE_LIST = [
     {
         "name": "pillow",
         "version": "Pillow==9.2.0"
+    },
+    {
+        "name": "decouple",
+        "version": "python-decouple==3.4"
     }
 ]
 
@@ -113,7 +117,7 @@ SETTINGS_INFO = [
                 "name": "Engine",
                 "key": "engine",
                 "options": {
-                    "Postgres": "postgres",
+                    "Postgres (version 12 and lower)": "postgres",
                     "Sqlite": "sqlite",
                 }
             },

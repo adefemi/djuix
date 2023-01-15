@@ -127,7 +127,7 @@ def download_project(project):
     term_controller = TerminalController("", project)
     
     project_name = term_controller.define_project_standard_name()
-    object_name = f"{username}_{project_name}.zip"
+    object_name = f"{project_name}.zip"
     zip_filename = project.project_path + ".zip"
     
     shutil.make_archive(project.project_path, 'zip', project.project_path)

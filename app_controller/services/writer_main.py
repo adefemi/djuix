@@ -23,7 +23,7 @@ class WriterMain(CommandTemplate):
         for key, value in import_obj.items():
             if key == "generic":
                 for i in value:
-                    self.content_data += f"import {i}"
+                    self.content_data += f"import {i}\n"
             
             else:
                 import_string = ""

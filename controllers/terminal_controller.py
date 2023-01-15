@@ -114,10 +114,11 @@ class TerminalController(CommandTemplate):
         print("created virtual env")
         return True
 
-    def install_packages(self):
-        send_process_message(self.active_user, "installing required packages...", 0)
+    def install_packages(self, my_packages=PACKAGE_LIST, send_socket=True):
+        if send_socket:
+            send_process_message(self.active_user, "installing required packages...", 0)
         
-        packages_to_use = PACKAGE_LIST
+        packages_to_use = my_packages
         try:
             if self.project.project_auth:
                 packages_to_use.append(OPTIONAL_PACKAGES['pyJwt'])

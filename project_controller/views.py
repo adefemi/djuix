@@ -10,6 +10,7 @@ from project_controller.services.write_auth import WriteAuth
 from project_controller.services.write_url import WriteProjectUrl
 from .services.write_settings_file import WriteSettings
 from rest_framework.views import APIView
+import os
 
 from project_controller.services.write_utils import WriteUtils
 
@@ -266,10 +267,34 @@ class SettingsView(ModelViewSet):
             obj["email"]["DEFAULT_FROM_EMAIL"] = self.settings_obj.get(
                 'DEFAULT_FROM_EMAIL', {}).get("value", None)
 
+    def control_env(self, state="delete"):
+        env_path = os.path.join(self.terminal_controller.get_project_full_path(), ".env")
+        if state == "delete":
+            try:
+                DirectoryManager.delete_file(env_path)
+            except: 
+                pass # ignore file does not exist
+            
+        else:
+            dir_manager = DirectoryManager(env_path)
+            env_file = dir_manager.create_file("")
+            DirectoryManager.write_file(env_file, self.env_content)
+            print("wrote env file to")
+
     def update(self, request, *args, **kwargs):
         # keys to deal with: Environment, database, filestorage, email
         request_body = Helper.normalizer_request(request.data)
         active_setting = self.get_object()
+        self.c_packages = PACKAGE_LIST
+        
+        current_db = active_setting.properties["DATABASES"]["properties"]["key"]
+
+        self.terminal_controller = TerminalController(
+            active_setting.project.project_path, active_setting.project)
+        
+        # clear out .env file 
+        self.control_env()
+        self.env_content = ""
 
         self.settings_obj = active_setting.properties
 
@@ -289,15 +314,18 @@ class SettingsView(ModelViewSet):
         if email_data:
             self.handle_email_update(email_data)
 
-        active_setting.properties = self.settings_obj
         active_setting.save()
-
-        terminal_controller = TerminalController(
-            active_setting.project.project_path, active_setting.project)
-        terminal_controller.install_packages()
+        self.terminal_controller.install_packages()
+        self.terminal_controller.finalize_process()
 
         write_settings = WriteSettings(active_setting.project)
         write_settings.update_setting(self.get_object().properties)
+        
+        if self.env_content:
+            self.control_env("create")
+            
+        if current_db != self.get_object().properties["DATABASES"]["properties"]["key"]:
+            active_setting.project.run_migration = True
 
         active_setting.project.save()  # update the project
 
@@ -322,6 +350,12 @@ class SettingsView(ModelViewSet):
             self.settings_obj["DATABASES"]["properties"]["PORT"] = data["DB_PORT"]
             self.settings_obj["DATABASES"]["properties"]["PASSWORD"] = data["DB_PASSWORD"]
             self.c_packages.append(OPTIONAL_PACKAGES['psycopg2'])
+            
+            self.env_content += f'DB_NAME={data["DB_NAME"]}\n'
+            self.env_content += f'DB_HOST={data["DB_HOST"]}\n'
+            self.env_content += f'DB_USER={data["DB_USER"]}\n'
+            self.env_content += f'DB_PORT={data["DB_PORT"]}\n'
+            self.env_content += f'DB_PASSWORD={data["DB_PASSWORD"]}\n'
 
         else:
             self.settings_obj["DATABASES"]["properties"]["key"] = "sqlite"
@@ -332,9 +366,6 @@ class SettingsView(ModelViewSet):
             self.settings_obj["DATABASES"]["properties"].pop('PORT', None)
             self.settings_obj["DATABASES"]["properties"].pop('USER', None)
             self.settings_obj["DATABASES"]["properties"].pop('PASSWORD', None)
-
-        self.get_object().project.run_migration = True
-        self.get_object().project.save()
 
     def handle_filestorage_update(self, data):
 

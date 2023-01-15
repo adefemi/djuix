@@ -89,10 +89,13 @@ class WriteSettings(WriterMain):
         for k,v in props.items():
             if k == "key": continue
             
-            if k == "PORT" or (k == "NAME" and "sqlite" in v):
+            if k == "NAME" and "sqlite" in v:
                 v = f"{v}"
             else:
-                v = f'"{v}"'
+                if k in ("NAME", "HOST", "USER", "PORT", "PASSWORD"):
+                    v = f"config('DB_{k}')"
+                else:
+                    v = f'"{v}"'
             self.content_data += f"\t\t'{k}': {v},\n"
         self.content_data += "\t}\n}\n"
         
@@ -154,7 +157,11 @@ class WriteSettings(WriterMain):
             },           
             "SECRET_KEY": {
                 "value": "s_b=5%2n=!(dehix7vlv*r3*si)+kjob3ev=6k%kknv%sd#hk2",
-                "is_string": True
+                "is_string": True,
+                "imports": {
+                    "parent": "decouple",
+                    "name": "config"
+                }
             },
             "DEBUG": {
                 "value": "True"
