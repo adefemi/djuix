@@ -66,7 +66,7 @@ services:
 
 networks:
   djuix_net:
-    driver: host
+    driver: bridge
 
 volumes:
     djuix_postgres_db:
