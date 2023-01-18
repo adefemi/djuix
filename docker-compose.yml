@@ -12,8 +12,7 @@ services:
       - ${DJUIX_FILES}:/djuix-files
     ports:
       - "8000:8000"
-    networks:
-      - djuix_net
+    network_mode: host
     depends_on:
       - postgres
       - redis
@@ -29,8 +28,7 @@ services:
        - djuix_postgres_db:/data/djuix_postgres_db
     ports:
       - "${DB_PORT}:5432"
-    networks:
-      - djuix_net
+    network_mode: host
     restart: unless-stopped
 
   redis:
@@ -62,11 +60,6 @@ services:
       - .env
     depends_on:
       - web
-
-
-networks:
-  djuix_net:
-    driver: host
 
 volumes:
     djuix_postgres_db:
