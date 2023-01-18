@@ -481,6 +481,7 @@ class UrlInfoView(ModelViewSet):
         obj = {
             "view_relation_id": normalized_data["view_relation_id"],
             "name": Helper.camelToSnakeDash(normalized_data["name"]),
+            "description": normalized_data.get("description", "")
         }
         
         active_view = ViewInfoView.queryset.get(id=obj["view_relation_id"])

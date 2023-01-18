@@ -516,7 +516,8 @@ class GetProjectUrls(ModelViewSet):
             "Admin Paths": [
                 {
                     "path": "admin/",
-                    "name": "Admin"
+                    "name": "Admin",
+                    "description": "Manage your project with Django Admin Interface",
                 }
             ]
         }
@@ -529,7 +530,8 @@ class GetProjectUrls(ModelViewSet):
             for url in app_urls:
                 temp_obj = {
                     "path": base_path + url.name,
-                    "name": url.name.capitalize()
+                    "name": url.name.capitalize(),
+                    "description": url.description
                 }
                 urls_array_dict[app_path_name].append(temp_obj)
 
