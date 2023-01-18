@@ -55,9 +55,9 @@ class ProjectView(ModelViewSet):
         data = Helper.normalizer_request(request.data)
         template = data.pop("template", None)
         
-        UserStatus.objects.filter(user_id=active_user.id, operation=UserStatuses.create_project).delete()
+        UserStatus.objects.filter(user_id=active_user.id, operation=UserStatuses.create_project.value).delete()
         
-        UserStatus.objects.create(user_id=active_user.id, operation=UserStatuses.create_project)
+        UserStatus.objects.create(user_id=active_user.id, operation=UserStatuses.create_project.value)
 
 
         default_project_path = DEFAULT_PROJECT_DIR
@@ -65,10 +65,10 @@ class ProjectView(ModelViewSet):
         delete_if_project_exist = data.get("delete_if_project_exist", False)
         if delete_if_project_exist:
             Project.objects.filter(
-                name=data["name"], project_path=default_project_path).delete()
+                name=data["name"], owner_id=active_user.id).delete()
         else:
             proj = Project.objects.filter(
-                name=data["name"], project_path=default_project_path)
+                name=data["name"], owner_id=active_user.id)
             if proj:
                 raise Exception(
                     f"A project with name '{data['name']}' already exists")
@@ -129,7 +129,7 @@ class ProjectView(ModelViewSet):
                 raise Exception(e)
 
         send_process_message(active_user.id, "All done!", 0)
-        UserStatus.objects.filter(user_id=active_user.id, operation=UserStatuses.create_project).delete()
+        UserStatus.objects.filter(user_id=active_user.id, operation=UserStatuses.create_project.value).delete()
 
         return Response(self.serializer_class(active_project).data, status=201)
 
@@ -557,9 +557,11 @@ class SetProjectAuth(ModelViewSet):
         validated_data = self.serializer_class(data=request.data)
         validated_data.is_valid(raise_exception=True)
         
-        UserStatus.objects.filter(user_id=active_user.id, operation=UserStatuses.create_project).delete()
+        ProjectAuth.objects.filter(project__owner_id=active_user.id).delete()
         
-        UserStatus.objects.create(user_id=active_user.id, operation=UserStatuses.create_project)
+        UserStatus.objects.filter(user_id=active_user.id, operation=UserStatuses.create_auth.value).delete()
+        
+        UserStatus.objects.create(user_id=active_user.id, operation=UserStatuses.create_auth.value)
 
         validated_data.save()
 
@@ -573,7 +575,7 @@ class SetProjectAuth(ModelViewSet):
             ProjectAuth.objects.filter(project_id=active_project.id).delete()
             raise Exception(e)
 
-        UserStatus.objects.filter(user_id=active_user.id, operation=UserStatuses.create_project).delete()
+        UserStatus.objects.filter(user_id=active_user.id, operation=UserStatuses.create_auth.value).delete()
         return Response("Auth created successfully", status=201)
 
     def update(self, request, *args, **kwargs):

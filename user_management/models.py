@@ -81,5 +81,5 @@ class VerificationUser(models.Model):
 
 class UserStatus(models.Model):
     user = models.ForeignKey(CustomUser, related_name="user_statuses", on_delete=models.CASCADE)
-    operation = models.CharField(max_length=50, choices=(("CREATE_PROJECT", "CREATE_PROJECT_"), ("CREATE_AUTH", "CREATE_AUTH")))
+    operation = models.CharField(max_length=50, choices=(("CREATE_PROJECT", "CREATE_PROJECT"), ("CREATE_AUTH", "CREATE_AUTH")))
     

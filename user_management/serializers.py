@@ -26,10 +26,11 @@ class UpdatePasswordSerializer(serializers.Serializer):
     password = serializers.CharField()
     
 
-class UserStatusSerializer(serializers.Serializer):
+class UserStatusSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = UserStatus
+        fields = "__all__"
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
@@ -44,4 +45,4 @@ class UserActivitiesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserActivities
-        fields = ("__all__")
+        fields = "__all__"

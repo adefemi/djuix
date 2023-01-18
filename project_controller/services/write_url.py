@@ -23,6 +23,8 @@ class WriteProjectUrl(CommandTemplate):
         
         apps = self.project.project_apps.all()
         for app in apps:
+            if not app.app_urls.all():
+                continue
             content_data += f"\tpath('{app.formatted_name}-path/', include('{app.formatted_name}.urls')),\n"
             
         try:
