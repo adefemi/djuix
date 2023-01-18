@@ -47,12 +47,18 @@ class WriteSettings(WriterMain):
             if k == "AUTH_PASSWORD_VALIDATORS":
                 self.set_auth_password_validators(v)
                 continue
+            
+            if k == "CLOUDINARY_STORAGE":
+                self.set_cloudinary_storage(v)
+                continue
         
             value = ""
             if v.get('value', None) is not None:
                 value = v['value']
                 if v.get("is_string", False):
                     value = f"'{value}'"
+                value = self.update_env_props(value, k)
+                
             elif v.get("items", None) is not None:
                 value = "[\n"
                 for i in v["items"]:
@@ -66,6 +72,11 @@ class WriteSettings(WriterMain):
         path_data = f"{self.project.project_path}/{self.project.formatted_name}/{self.project.formatted_name}/"
         
         write_to_file(path_data, 'settings.py', self.content_data)
+        
+    def update_env_props(self, current_v, k):
+        if k in ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_STORAGE_BUCKET_NAME"):
+            return f"config('{k}')"
+        return current_v
         
     def set_template_key(self, props):
         self.content_data += "\nTEMPLATES = [\n\t{\n"
@@ -98,6 +109,13 @@ class WriteSettings(WriterMain):
                     v = f'"{v}"'
             self.content_data += f"\t\t'{k}': {v},\n"
         self.content_data += "\t}\n}\n"
+        
+    def set_cloudinary_storage(self, v):
+        value = v['value']
+        self.content_data += "\nCLOUDINARY_STORAGE = {"
+        for k,a in value.items():
+            self.content_data += f"\n\t'{k}': config('{k}'),"
+        self.content_data += "\n}\n"
         
     def set_rest_framework_key(self, props):
         self.content_data += "\nREST_FRAMEWORK = {\n\t"

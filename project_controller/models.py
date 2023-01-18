@@ -14,6 +14,7 @@ class Project(models.Model):
     slug = models.SlugField(max_length=50, null=True, blank=True, editable=True)
     run_migration = models.BooleanField(default=False)
     has_migration = models.BooleanField(default=False)
+    changed_storage = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

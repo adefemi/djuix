@@ -286,8 +286,10 @@ class SettingsView(ModelViewSet):
         request_body = Helper.normalizer_request(request.data)
         active_setting = self.get_object()
         self.c_packages = PACKAGE_LIST
+        current_aws = str(active_setting.properties.get('AWS_ACCESS_KEY_ID', '')) + str(active_setting.properties.get('AWS_SECRET_ACCESS_KEY', '')) + str(active_setting.properties.get('AWS_STORAGE_BUCKET_NAME', ''))
+        current_cloudinary = str(active_setting.properties.get('CLOUDINARY_STORAGE', ''))
         
-        current_db = active_setting.properties["DATABASES"]["properties"]["key"]
+        current_db = active_setting.properties["DATABASES"]
 
         self.terminal_controller = TerminalController(
             active_setting.project.project_path, active_setting.project)
@@ -302,9 +304,9 @@ class SettingsView(ModelViewSet):
         if env_data:
             self.handle_env_update(env_data)
 
-        databse_data = request_body.get("database", None)
-        if databse_data:
-            self.handle_database_update(databse_data)
+        database_data = request_body.get("database", None)
+        if database_data:
+            self.handle_database_update(database_data)
 
         filestorage_data = request_body.get("storage", None)
         if filestorage_data:
@@ -315,17 +317,28 @@ class SettingsView(ModelViewSet):
             self.handle_email_update(email_data)
 
         active_setting.save()
-        self.terminal_controller.install_packages()
+        self.terminal_controller.install_packages(self.c_packages)
         self.terminal_controller.finalize_process()
+        
+        new_props = self.get_object().properties
 
         write_settings = WriteSettings(active_setting.project)
-        write_settings.update_setting(self.get_object().properties)
+        write_settings.update_setting(new_props)
         
         if self.env_content:
             self.control_env("create")
             
-        if current_db != self.get_object().properties["DATABASES"]["properties"]["key"]:
+        if str(current_db) != str(new_props["DATABASES"]):
             active_setting.project.run_migration = True
+            
+        if {'AWS_ACCESS_KEY_ID', 'CLOUDINARY_STORAGE'} <= new_props.keys():
+            if 'AWS_ACCESS_KEY_ID' in new_props.properties:
+                new_aws = str(new_props.get('AWS_ACCESS_KEY_ID', '')) + str(new_props.get('AWS_SECRET_ACCESS_KEY', '')) + str(new_props.get('AWS_STORAGE_BUCKET_NAME', ''))
+                if current_aws != new_aws:
+                    active_setting.project.changed_storage = True
+            elif 'CLOUDINARY_STORAGE' in new_props and current_cloudinary != str(new_props.get('CLOUDINARY_STORAGE', '')):
+                active_setting.project.changed_storage = True
+            
 
         active_setting.project.save()  # update the project
 
@@ -402,12 +415,16 @@ class SettingsView(ModelViewSet):
                 "is_string": True
             }
             self.settings_obj["AWS_S3_CUSTOM_DOMAIN"] = {
-                "value": "'{}.s3.amazonaws.com'".format(data["AWS_STORAGE_BUCKET_NAME"]),
+                "value": "f'{config(\"AWS_STORAGE_BUCKET_NAME\")}.s3.amazonaws.com'",
             }
             self.settings_obj["DEFAULT_FILE_STORAGE"] = {
                 "value": "storages.backends.s3boto3.S3Boto3Storage",
                 "is_string": True
             }
+            
+            self.env_content += f'\nAWS_ACCESS_KEY_ID={data["AWS_ACCESS_KEY_ID"]}\n'
+            self.env_content += f'AWS_SECRET_ACCESS_KEY={data["AWS_SECRET_ACCESS_KEY"]}\n'
+            self.env_content += f'AWS_STORAGE_BUCKET_NAME={data["AWS_STORAGE_BUCKET_NAME"]}\n'
 
             self.c_packages.append(OPTIONAL_PACKAGES["boto"])
             self.c_packages.append(OPTIONAL_PACKAGES["django_storages"])
@@ -429,6 +446,10 @@ class SettingsView(ModelViewSet):
                 "value": "cloudinary_storage.storage.MediaCloudinaryStorage",
                 "is_string": True
             }
+            
+            self.env_content += f'\nCLOUD_NAME={data["CLOUD_NAME"]}\n'
+            self.env_content += f'API_KEY={data["API_KEY"]}\n'
+            self.env_content += f'API_SECRET={data["API_SECRET"]}\n'
 
             self.c_packages.append(OPTIONAL_PACKAGES['cloudinary'])
             self.c_packages.append(OPTIONAL_PACKAGES['django_cloudinary'])

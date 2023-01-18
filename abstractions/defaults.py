@@ -220,63 +220,63 @@ SETTINGS_INFO = [
             ]
         }
     },
-    {
-        "name": "EMAIL SETUP",
-        "tag": "EMAIL",
-        "properties": [
-            {
-                "name": "Engine",
-                "key": "engine",
-                "options": {
-                    "None": "",
-                    "Set credentials": "email",
-                }
-            },
-        ],
-        "context": {
-            "email": [
-                {
-                    "name": "Host",
-                    "key": "HOST",
-                    "value": "",
-                    "is_required": True,
-                },
-                {
-                    "name": "Host User",
-                    "key": "HOST_USER",
-                    "value": "",
-                    "is_required": True,
-                },
-                {
-                    "name": "Password",
-                    "key": "PASSWORD",
-                    "value": "",
-                    "is_secure": True,
-                    "is_required": True,
-                },
-                {
-                    "name": "Port",
-                    "key": "PORT",
-                    "value": "",
-                    "is_number": True,
-                    "is_required": True,
-                },
-                {
-                    "name": "Default from email",
-                    "key": "DEFAULT_FROM_EMAIL",
-                    "value": "",
-                    "is_required": True,
-                },
-                {
-                    "name": "USE TLS",
-                    "key": "USE_TLS",
-                    "value": "",
-                    "is_boolean": True,
-                    "is_required": True,
-                },
-            ]
-        }
-    }
+    # {
+    #     "name": "EMAIL SETUP",
+    #     "tag": "EMAIL",
+    #     "properties": [
+    #         {
+    #             "name": "Engine",
+    #             "key": "engine",
+    #             "options": {
+    #                 "None": "",
+    #                 "Set credentials": "email",
+    #             }
+    #         },
+    #     ],
+    #     "context": {
+    #         "email": [
+    #             {
+    #                 "name": "Host",
+    #                 "key": "HOST",
+    #                 "value": "",
+    #                 "is_required": True,
+    #             },
+    #             {
+    #                 "name": "Host User",
+    #                 "key": "HOST_USER",
+    #                 "value": "",
+    #                 "is_required": True,
+    #             },
+    #             {
+    #                 "name": "Password",
+    #                 "key": "PASSWORD",
+    #                 "value": "",
+    #                 "is_secure": True,
+    #                 "is_required": True,
+    #             },
+    #             {
+    #                 "name": "Port",
+    #                 "key": "PORT",
+    #                 "value": "",
+    #                 "is_number": True,
+    #                 "is_required": True,
+    #             },
+    #             {
+    #                 "name": "Default from email",
+    #                 "key": "DEFAULT_FROM_EMAIL",
+    #                 "value": "",
+    #                 "is_required": True,
+    #             },
+    #             {
+    #                 "name": "USE TLS",
+    #                 "key": "USE_TLS",
+    #                 "value": "",
+    #                 "is_boolean": True,
+    #                 "is_required": True,
+    #             },
+    #         ]
+    #     }
+    # }
 ]
 
 common_relation_reference = {
