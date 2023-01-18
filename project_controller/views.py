@@ -1,5 +1,5 @@
 from rest_framework.viewsets import ModelViewSet
-from abstractions.defaults import DEFAULT_PROJECT_DIR, OPTIONAL_PACKAGES, PACKAGE_LIST
+from abstractions.defaults import DEFAULT_PROJECT_DIR, OPTIONAL_PACKAGES, PACKAGE_LIST, UserStatuses
 from app_controller.models import ModelInfo
 from app_controller.services.write_view import WriteToView
 from controllers.directory_controller import DirectoryManager
@@ -23,6 +23,7 @@ from controllers.terminal_controller import TerminalController
 from rest_framework.response import Response
 from djuix.helper import Helper
 from djuix.functions import send_process_message
+from user_management.models import UserStatus
 
 from project_templates.blog.process import CreateBlogTemplate
 
@@ -53,6 +54,11 @@ class ProjectView(ModelViewSet):
         active_user = request.user
         data = Helper.normalizer_request(request.data)
         template = data.pop("template", None)
+        
+        UserStatus.objects.filter(user_id=active_user.id, operation=UserStatuses.create_project).delete()
+        
+        UserStatus.objects.create(user_id=active_user.id, operation=UserStatuses.create_project)
+
 
         default_project_path = DEFAULT_PROJECT_DIR
 
@@ -123,6 +129,7 @@ class ProjectView(ModelViewSet):
                 raise Exception(e)
 
         send_process_message(active_user.id, "All done!", 0)
+        UserStatus.objects.filter(user_id=active_user.id, operation=UserStatuses.create_project).delete()
 
         return Response(self.serializer_class(active_project).data, status=201)
 
@@ -546,8 +553,13 @@ class SetProjectAuth(ModelViewSet):
         return super().get_queryset().filter(project__owner_id=self.request.user.id)
 
     def create(self, request, *args, **kwargs):
+        active_user = request.user
         validated_data = self.serializer_class(data=request.data)
         validated_data.is_valid(raise_exception=True)
+        
+        UserStatus.objects.filter(user_id=active_user.id, operation=UserStatuses.create_project).delete()
+        
+        UserStatus.objects.create(user_id=active_user.id, operation=UserStatuses.create_project)
 
         validated_data.save()
 
@@ -561,6 +573,7 @@ class SetProjectAuth(ModelViewSet):
             ProjectAuth.objects.filter(project_id=active_project.id).delete()
             raise Exception(e)
 
+        UserStatus.objects.filter(user_id=active_user.id, operation=UserStatuses.create_project).delete()
         return Response("Auth created successfully", status=201)
 
     def update(self, request, *args, **kwargs):

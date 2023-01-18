@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import CustomUser, UserActivities
+from .models import CustomUser, UserActivities, UserStatus
 
 
 class AuthSerializer(serializers.Serializer):
@@ -24,9 +24,16 @@ class ResentEmailSerializer(serializers.Serializer):
 class UpdatePasswordSerializer(serializers.Serializer):
     user_id = serializers.CharField()
     password = serializers.CharField()
+    
+
+class UserStatusSerializer(serializers.Serializer):
+    
+    class Meta:
+        model = UserStatus
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
+    user_statuses = UserStatusSerializer(many=True, read_only=True)
 
     class Meta:
         model = CustomUser

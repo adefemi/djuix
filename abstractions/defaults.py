@@ -1,4 +1,5 @@
 from calendar import c
+import enum
 
 
 DEFAULT_PROJECT_DIR="/djuix-files"
@@ -458,3 +459,8 @@ AUTH_URLS = [
 auth_app_name = "AuthController"
 app_email_name = "Djuix.io Team"
 support_mail = "admin@djuix.io"
+
+class UserStatuses(enum.Enum):
+    create_project = "CREATE_PROJECT"
+    create_auth = "CREATE_AUTH"
+
