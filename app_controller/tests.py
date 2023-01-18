@@ -1,8 +1,6 @@
-from rest_framework.test import APITestCase, APITransactionTestCase
-from controllers.terminal_controller import TerminalController
+from rest_framework.test import APITransactionTestCase
 from controllers.directory_controller import DirectoryManager
 import json
-import os
 import time
 
 
