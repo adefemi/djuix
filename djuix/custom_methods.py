@@ -83,6 +83,8 @@ source {term_controller.get_env()}/bin/activate
         
 # Charge to the directory where the Django project is located
 cd {term_controller.project_name}
+
+pip install -r requirements.txt
         
 # Start the Django development server
 python3 manage.py runserver
@@ -106,6 +108,8 @@ source {term_controller.get_env()}/bin/activate
         
 # Charge to the directory where the Django project is located
 cd {term_controller.project_name}
+
+pip install -r requirements.txt
         
 # Start the Django development server
 python3 manage.py createsuperuser
