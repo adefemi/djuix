@@ -46,6 +46,8 @@ services:
       - .:/djuix
       - ${DJUIX_FILES}:/djuix-files
     restart: always
+    networks:
+      - djuix_net
     env_file:
       - .env
     depends_on:
@@ -59,6 +61,8 @@ services:
       - .:/djuix
       - ${DJUIX_FILES}:/djuix-files
     restart: always
+    networks:
+      - djuix_net
     env_file:
       - .env
     depends_on:
