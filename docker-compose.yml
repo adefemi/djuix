@@ -38,6 +38,8 @@ services:
     environment:
       - REDIS_REPLICATION_MODE=master
     restart: always
+    networks:
+      - djuix_net
 
   celery:
     build: .
