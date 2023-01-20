@@ -43,8 +43,6 @@ services:
     environment:
       - REDIS_REPLICATION_MODE=master
     restart: always
-    ports:
-      - "6379:6379"
 
   celery:
     build: .
