@@ -41,8 +41,6 @@ services:
     restart: always
     volumes:
       - /etc/redis/redis.conf:/etc/redis/redis.conf
-    ports:
-      - "6379:6379"
 
   celery:
     build: .
