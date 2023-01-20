@@ -40,7 +40,7 @@ services:
       - REDIS_REPLICATION_MODE=master
     restart: always
     volumes:
-      - ./redis.conf:/etc/redis/redis.conf
+      - /etc/redis/redis.conf:/etc/redis/redis.conf
     ports:
       - "6379:6379"
 
