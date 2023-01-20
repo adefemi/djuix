@@ -35,12 +35,9 @@ services:
 
   redis:
     image: "redis:alpine"
-    command: redis-server /etc/redis/redis.conf
     environment:
       - REDIS_REPLICATION_MODE=master
     restart: always
-    volumes:
-      - /etc/redis/redis.conf:/etc/redis/redis.conf
 
   celery:
     build: .
