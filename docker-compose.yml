@@ -27,8 +27,6 @@ services:
       PGDATA: /data/djuix_postgres_db
     volumes:
        - djuix_postgres_db:/data/djuix_postgres_db
-    ports:
-      - "${DB_PORT}:5432"
     networks:
       - djuix_net
     restart: unless-stopped
