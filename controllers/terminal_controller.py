@@ -5,6 +5,7 @@ from abstractions.defaults import OPTIONAL_PACKAGES, PACKAGE_LIST
 from controllers.command_template import CommandTemplate, OsType
 from djuix.functions import send_process_message
 from .directory_controller import DirectoryManager
+import traceback
 
 
 class TerminalController(CommandTemplate):
@@ -21,7 +22,22 @@ class TerminalController(CommandTemplate):
         return f"{self.path}/{self.project_name}/{self.project_name}/"
     
     def handle_terminal_error(self, error):
-        raise Exception(error)
+        traceback_list = traceback.extract_tb(error)
+        important_trace = traceback_list[-1]
+        file_name, line_number, function_name, error_text = important_trace
+        print(important_trace)
+        raise Exception(error_text)
+    
+    def update_pip(self):
+        command = "pip install --upgrade pip"
+        command_template = self.get_access_template(command)
+        p = subprocess.Popen(command_template, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        p.wait()
+        [_, err] = p.communicate()
+        if err:
+            self.handle_terminal_error(err.decode())
+        
+        return True
 
     def create_project(self):
         self.check_user_folder()
@@ -115,6 +131,10 @@ class TerminalController(CommandTemplate):
         return True
 
     def install_packages(self, my_packages=PACKAGE_LIST, send_socket=True):
+        if send_socket:
+            send_process_message(self.active_user, "Updating pip...", 0)
+            
+        self.update_pip()
         if send_socket:
             send_process_message(self.active_user, "installing required packages...", 0)
         
