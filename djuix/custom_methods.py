@@ -7,6 +7,7 @@ import os
 import subprocess
 import boto3
 from django.conf import settings
+import logging
 
 
 def custom_exception_handler(exc, context):
@@ -24,8 +25,8 @@ def custom_exception_handler(exc, context):
     
     if auth_error:
         status_code = 401
-        
-    print("my status: ", status_code)
+    
+    logging.exception(traceback.format_exc())
 
     return Response({"error": exc_list}, status=status_code)
 
