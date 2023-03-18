@@ -1,7 +1,6 @@
 from app_controller.services.writer_main import WriterMain
 from djuix.functions import send_process_message, write_to_file
 from project_controller.models import ProjectSettings
-from abstractions.defaults import auth_app_name
 
 
 class WriteSettings(WriterMain):

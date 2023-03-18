@@ -6,6 +6,7 @@ class WriteToView(WriterMain):
     has_ast_for_many_to_many = False
     has_count_q_for_search = False
     implemented_queryset = False
+    auth_app_name = auth_app_name
     
     def __init__(self, app):
         super().__init__(app)
@@ -282,7 +283,7 @@ class WriteToView(WriterMain):
                 
             if field_properties.get("permission", None) is not None:
                 if len(field_properties["permission"]) > 4:
-                    key = f"{auth_app_name}.methods"
+                    key = f"{self.auth_app_name}.methods"
                     
                     if not import_obj.get(key, None):
                         import_obj[key] = []

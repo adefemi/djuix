@@ -5,6 +5,7 @@ from abstractions.defaults import auth_app_name
 
 class WriteProjectUrl(CommandTemplate):
     project = None
+    auth_app_name = auth_app_name
     
     def __init__(self, project):
         self.project = project
@@ -29,7 +30,7 @@ class WriteProjectUrl(CommandTemplate):
             
         try:
             if self.project.project_auth:
-                content_data += f"\tpath('auth-path/', include('{auth_app_name}.urls')),\n"
+                content_data += f"\tpath('auth-path/', include('{self.auth_app_name}.urls')),\n"
         except Exception:
             pass
         

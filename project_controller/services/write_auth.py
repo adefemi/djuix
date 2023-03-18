@@ -10,6 +10,7 @@ from project_controller.services.write_url import WriteProjectUrl
 
 
 class WriteAuth(TerminalController):
+    auth_app_name = auth_app_name
 
     def __init__(self, project, isDel=False):
         self.project = project
@@ -17,15 +18,15 @@ class WriteAuth(TerminalController):
         if not isDel:
             self.project_auth = project.project_auth
             self.username_field = self.project.project_auth.username_field
-        self.app_path = f"{self.path}/{self.project_name}/{auth_app_name}/"
+        self.app_path = f"{self.path}/{self.project_name}/{self.auth_app_name}/"
         
         self.isDel = isDel
 
     def setup_auth(self):
         self.clean_up()
         send_process_message(self.project.owner.id,
-                             f"creating {auth_app_name} app...")
-        self.create_app(auth_app_name)
+                             f"creating {self.auth_app_name} app...")
+        self.create_app(self.auth_app_name)
         self.install_packages()
 
         send_process_message(self.project.owner.id,
@@ -366,7 +367,7 @@ class WriteAuth(TerminalController):
         try:
             DirectoryManager.delete_directory(self.app_path)
             self.project.project_setting.properties["INSTALLED_APPS"]["items"].remove(
-                auth_app_name)
+                self.auth_app_name)
             del self.project.project_setting.properties['AUTH_USER_MODEL']
             self.project.project_setting.save()
         except:
@@ -377,11 +378,11 @@ class WriteAuth(TerminalController):
         settings_c = WriteSettings(self.project)
         # update project settings
         if not self.isDel:
-            if auth_app_name not in self.project.project_setting.properties["INSTALLED_APPS"]["items"]:
+            if self.auth_app_name not in self.project.project_setting.properties["INSTALLED_APPS"]["items"]:
                 self.project.project_setting.properties["INSTALLED_APPS"]["items"].append(
-                    auth_app_name)
+                    self.auth_app_name)
                 self.project.project_setting.properties["AUTH_USER_MODEL"] = {
-                    "value": f"{auth_app_name}.{self.custom_username}",
+                    "value": f"{self.auth_app_name}.{self.custom_username}",
                     "is_string": True
                 }
 
@@ -399,7 +400,7 @@ class WriteAuth(TerminalController):
                     {
                         "key": "DEFAULT_AUTHENTICATION_CLASSES",
                         "values": [
-                            f"{auth_app_name}.methods.{self.project_auth.default_auth}"
+                            f"{self.auth_app_name}.methods.{self.project_auth.default_auth}"
                         ]
                     }
                 )
@@ -411,7 +412,7 @@ class WriteAuth(TerminalController):
                         {
                             "key": "DEFAULT_AUTHENTICATION_CLASSES",
                             "values": [
-                                f"{auth_app_name}.methods.{self.project_auth.default_auth}"
+                                f"{self.auth_app_name}.methods.{self.project_auth.default_auth}"
                             ]
                         }
                     ]
