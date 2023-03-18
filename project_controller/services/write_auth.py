@@ -49,7 +49,7 @@ class WriteAuth(TerminalController):
 
         send_process_message(self.project.owner.id, "finalizing process...", 0)
         self.finalize_process()
-        send_process_message(self.project.owner.id, "All Done", 0)
+        send_process_message(self.project.owner.id, "All Done", 0, True)
 
     def delete_auth(self):
         self.clean_up()

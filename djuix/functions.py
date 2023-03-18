@@ -21,12 +21,13 @@ def write_to_file(path_data, file_name, content):
         return False
 
 
-def send_socket(process_type, projectId, message):
+def send_socket(process_type, projectId, message, done=False):
 
     data = {
         "process_type": process_type,
         "id": projectId,
-        "message": message
+        "message": message,
+        "done": done,
     }
 
     headers = {
@@ -40,9 +41,9 @@ def send_socket(process_type, projectId, message):
     return True
 
 
-def send_process_message(project_id, message, wait_sec=1):
+def send_process_message(project_id, message, wait_sec=1, done=False):
 
-    send_socket("project_creation", project_id, message)
+    send_socket("project_creation", project_id, message, done)
     time.sleep(wait_sec)
     return
 

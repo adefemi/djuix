@@ -128,7 +128,7 @@ class ProjectView(ModelViewSet):
                 active_project.delete()
                 raise Exception(e)
 
-        send_process_message(active_user.id, "All done!", 0)
+        send_process_message(active_user.id, "All done!", 0, True)
         UserStatus.objects.filter(user_id=active_user.id, operation=UserStatuses.create_project.value).delete()
 
         return Response(self.serializer_class(active_project).data, status=201)
