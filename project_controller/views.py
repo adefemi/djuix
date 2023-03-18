@@ -133,7 +133,8 @@ class ProjectView(ModelViewSet):
                 self.deleteProjectStatus()
                 raise Exception(e)
 
-        send_process_message(active_user.id, "All done!", 0, True)
+        send_process_message(active_user.id, "All done!")
+        send_process_message(active_user.id, "", 0, True)
         UserStatus.objects.filter(
             user_id=active_user.id, operation=UserStatuses.create_project.value).delete()
 
