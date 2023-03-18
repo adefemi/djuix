@@ -19,7 +19,7 @@ class WriteAuth(TerminalController):
             self.project_auth = project.project_auth
             self.username_field = self.project.project_auth.username_field
         self.app_path = f"{self.path}/{self.project_name}/{self.auth_app_name}/"
-        
+
         self.isDel = isDel
 
     def setup_auth(self):
@@ -108,7 +108,7 @@ class WriteAuth(TerminalController):
         fields = []
         if self.project_auth.properties and self.project_auth.properties.get("fields", None):
             fields = self.project_auth.properties["fields"]
-            
+
         has_slug, slug_data, data = WriteToModel.handle_model_fields(
             fields, data_content, self.get_formatted_name)
         data_content = data
@@ -234,7 +234,7 @@ class WriteAuth(TerminalController):
         data_content += f"class RegisterSerializer(serializers.Serializer):\n"
         data_content += f"\temail = serializers.EmailField()\n"
         data_content += f"\tusername = serializers.CharField()\n"
-    
+
         fields = []
         if self.project_auth.properties and self.project_auth.properties.get("fields", None):
             fields = self.project_auth.properties["fields"]
@@ -398,8 +398,9 @@ class WriteAuth(TerminalController):
                     continue
                 new_props.append(i)
 
-            if self.project_auth.default_auth:
-                self.project.project_setting.properties["REST_FRAMEWORK"]['properties'] = new_props
+            if not self.isDel:
+                if self.project_auth.default_auth:
+                    self.project.project_setting.properties["REST_FRAMEWORK"]['properties'] = new_props
                 self.project.project_setting.properties["REST_FRAMEWORK"]['properties'].append(
                     {
                         "key": "DEFAULT_AUTHENTICATION_CLASSES",
@@ -412,15 +413,15 @@ class WriteAuth(TerminalController):
             if not self.isDel:
                 if self.project_auth.default_auth:
                     self.project.project_setting.properties["REST_FRAMEWORK"] = {
-                    "properties": [
-                        {
-                            "key": "DEFAULT_AUTHENTICATION_CLASSES",
-                            "values": [
-                                f"{self.auth_app_name}.methods.{self.project_auth.default_auth}"
-                            ]
-                        }
-                    ]
-                }
+                        "properties": [
+                            {
+                                "key": "DEFAULT_AUTHENTICATION_CLASSES",
+                                "values": [
+                                    f"{self.auth_app_name}.methods.{self.project_auth.default_auth}"
+                                ]
+                            }
+                        ]
+                    }
 
         self.project.project_setting.save()
         settings_c.update_setting(self.project.project_setting.properties)
