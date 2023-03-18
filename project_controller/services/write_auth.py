@@ -29,7 +29,7 @@ class WriteAuth(TerminalController):
         self.install_packages()
 
         send_process_message(self.project.owner.id,
-                             "creating necessary models...")
+                             "Creating necessary models...")
         self.create_auth_model()
 
         send_process_message(self.project.owner.id,

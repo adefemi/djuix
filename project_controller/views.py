@@ -118,11 +118,11 @@ class ProjectView(ModelViewSet):
 
         if template == "blog":
             print("start creating blog template")
-            send_process_message(active_user.id, "creating blog template...")
+            send_process_message(active_user.id, "Creating blog template...")
             try:
                 CreateBlogTemplate(active_project)
                 send_process_message(
-                    active_user.id, "creating blog template migrations...")
+                    active_user.id, "Creating blog template migrations...")
                 terminal_controller.run_migration()
                 active_project.has_migration = True
                 active_project.save()
@@ -557,6 +557,10 @@ class GetProjectUrls(ModelViewSet):
 class SetProjectAuth(ModelViewSet):
     serializer_class = ProjectAuthSerializer
     queryset = ProjectAuth.objects.all()
+    
+    def deleteAuthStatus(self):
+        UserStatus.objects.filter(
+            user_id=self.request.user.id, operation=UserStatuses.create_auth.value).delete()
 
     def get_queryset(self):
         return super().get_queryset().filter(project__owner_id=self.request.user.id)
@@ -568,8 +572,7 @@ class SetProjectAuth(ModelViewSet):
 
         ProjectAuth.objects.filter(project__owner_id=active_user.id).delete()
 
-        UserStatus.objects.filter(
-            user_id=active_user.id, operation=UserStatuses.create_auth.value).delete()
+        self.deleteAuthStatus()
 
         UserStatus.objects.create(
             user_id=active_user.id, operation=UserStatuses.create_auth.value)
@@ -584,6 +587,7 @@ class SetProjectAuth(ModelViewSet):
             write_auth.setup_auth()
         except Exception as e:
             ProjectAuth.objects.filter(project_id=active_project.id).delete()
+            self.deleteAuthStatus()
             raise Exception(e)
 
         UserStatus.objects.filter(
