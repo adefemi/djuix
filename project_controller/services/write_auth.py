@@ -234,7 +234,10 @@ class WriteAuth(TerminalController):
         data_content += f"class RegisterSerializer(serializers.Serializer):\n"
         data_content += f"\temail = serializers.EmailField()\n"
         data_content += f"\tusername = serializers.CharField()\n"
-        fields = self.project_auth.properties["fields"] or []
+    
+        fields = []
+        if self.project_auth.properties and self.project_auth.properties.get("fields", None):
+            fields = self.project_auth.properties["fields"]
 
         for field_data in fields:
             field_attrs = field_data.get("field_properties", None)
