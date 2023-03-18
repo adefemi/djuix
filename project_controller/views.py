@@ -33,6 +33,11 @@ class ProjectView(ModelViewSet):
     queryset = Project.objects.all()
     lookup_field = "slug"
 
+    def deleteProjectStatus(self):
+        UserStatus.objects.filter(
+            user_id=self.request.user.id,
+            operation=UserStatuses.create_project.value).delete()
+
     def get_queryset(self):
         data = self.request.query_params.dict()
         data.pop("page", None)
@@ -54,11 +59,9 @@ class ProjectView(ModelViewSet):
         active_user = request.user
         data = Helper.normalizer_request(request.data)
         template = data.pop("template", None)
-        
-        UserStatus.objects.filter(user_id=active_user.id, operation=UserStatuses.create_project.value).delete()
-        
-        UserStatus.objects.create(user_id=active_user.id, operation=UserStatuses.create_project.value)
 
+        UserStatus.objects.create(
+            user_id=active_user.id, operation=UserStatuses.create_project.value)
 
         default_project_path = DEFAULT_PROJECT_DIR
 
@@ -70,6 +73,7 @@ class ProjectView(ModelViewSet):
             proj = Project.objects.filter(
                 name=data["name"], owner_id=active_user.id)
             if proj:
+                self.deleteProjectStatus()
                 raise Exception(
                     f"A project with name '{data['name']}' already exists")
 
@@ -96,7 +100,7 @@ class ProjectView(ModelViewSet):
             active_project.save()
         except Exception as e:
             self.queryset.filter(id=serializer.data["id"]).delete()
-            print(e)
+            self.deleteProjectStatus()
             raise Exception(e)
 
         try:
@@ -106,7 +110,7 @@ class ProjectView(ModelViewSet):
             print("settings created")
         except Exception as e:
             self.queryset.filter(id=serializer.data["id"]).delete()
-            print(e)
+            self.deleteProjectStatus()
             raise Exception(e)
 
         # create some basic project artifacts
@@ -126,10 +130,12 @@ class ProjectView(ModelViewSet):
                     has_created_migration=True)
             except Exception as e:
                 active_project.delete()
+                self.deleteProjectStatus()
                 raise Exception(e)
 
         send_process_message(active_user.id, "All done!", 0, True)
-        UserStatus.objects.filter(user_id=active_user.id, operation=UserStatuses.create_project.value).delete()
+        UserStatus.objects.filter(
+            user_id=active_user.id, operation=UserStatuses.create_project.value).delete()
 
         return Response(self.serializer_class(active_project).data, status=201)
 
@@ -275,13 +281,14 @@ class SettingsView(ModelViewSet):
                 'DEFAULT_FROM_EMAIL', {}).get("value", None)
 
     def control_env(self, state="delete"):
-        env_path = os.path.join(self.terminal_controller.get_project_full_path(), ".env")
+        env_path = os.path.join(
+            self.terminal_controller.get_project_full_path(), ".env")
         if state == "delete":
             try:
                 DirectoryManager.delete_file(env_path)
-            except: 
-                pass # ignore file does not exist
-            
+            except:
+                pass  # ignore file does not exist
+
         else:
             dir_manager = DirectoryManager(env_path)
             env_file = dir_manager.create_file("")
@@ -293,15 +300,17 @@ class SettingsView(ModelViewSet):
         request_body = Helper.normalizer_request(request.data)
         active_setting = self.get_object()
         self.c_packages = PACKAGE_LIST
-        current_aws = str(active_setting.properties.get('AWS_ACCESS_KEY_ID', '')) + str(active_setting.properties.get('AWS_SECRET_ACCESS_KEY', '')) + str(active_setting.properties.get('AWS_STORAGE_BUCKET_NAME', ''))
-        current_cloudinary = str(active_setting.properties.get('CLOUDINARY_STORAGE', ''))
-        
+        current_aws = str(active_setting.properties.get('AWS_ACCESS_KEY_ID', '')) + str(active_setting.properties.get(
+            'AWS_SECRET_ACCESS_KEY', '')) + str(active_setting.properties.get('AWS_STORAGE_BUCKET_NAME', ''))
+        current_cloudinary = str(
+            active_setting.properties.get('CLOUDINARY_STORAGE', ''))
+
         current_db = active_setting.properties["DATABASES"]
 
         self.terminal_controller = TerminalController(
             active_setting.project.project_path, active_setting.project)
-        
-        # clear out .env file 
+
+        # clear out .env file
         self.control_env()
         self.env_content = ""
 
@@ -326,26 +335,26 @@ class SettingsView(ModelViewSet):
         active_setting.save()
         self.terminal_controller.install_packages(self.c_packages)
         self.terminal_controller.finalize_process()
-        
+
         new_props = self.get_object().properties
 
         write_settings = WriteSettings(active_setting.project)
         write_settings.update_setting(new_props)
-        
+
         if self.env_content:
             self.control_env("create")
-            
+
         if str(current_db) != str(new_props["DATABASES"]):
             active_setting.project.run_migration = True
-            
+
         if {'AWS_ACCESS_KEY_ID', 'CLOUDINARY_STORAGE'} <= new_props.keys():
             if 'AWS_ACCESS_KEY_ID' in new_props.properties:
-                new_aws = str(new_props.get('AWS_ACCESS_KEY_ID', '')) + str(new_props.get('AWS_SECRET_ACCESS_KEY', '')) + str(new_props.get('AWS_STORAGE_BUCKET_NAME', ''))
+                new_aws = str(new_props.get('AWS_ACCESS_KEY_ID', '')) + str(new_props.get(
+                    'AWS_SECRET_ACCESS_KEY', '')) + str(new_props.get('AWS_STORAGE_BUCKET_NAME', ''))
                 if current_aws != new_aws:
                     active_setting.project.changed_storage = True
             elif 'CLOUDINARY_STORAGE' in new_props and current_cloudinary != str(new_props.get('CLOUDINARY_STORAGE', '')):
                 active_setting.project.changed_storage = True
-            
 
         active_setting.project.save()  # update the project
 
@@ -370,7 +379,7 @@ class SettingsView(ModelViewSet):
             self.settings_obj["DATABASES"]["properties"]["PORT"] = data["DB_PORT"]
             self.settings_obj["DATABASES"]["properties"]["PASSWORD"] = data["DB_PASSWORD"]
             self.c_packages.append(OPTIONAL_PACKAGES['psycopg2'])
-            
+
             self.env_content += f'DB_NAME={data["DB_NAME"]}\n'
             self.env_content += f'DB_HOST={data["DB_HOST"]}\n'
             self.env_content += f'DB_USER={data["DB_USER"]}\n'
@@ -428,7 +437,7 @@ class SettingsView(ModelViewSet):
                 "value": "storages.backends.s3boto3.S3Boto3Storage",
                 "is_string": True
             }
-            
+
             self.env_content += f'\nAWS_ACCESS_KEY_ID={data["AWS_ACCESS_KEY_ID"]}\n'
             self.env_content += f'AWS_SECRET_ACCESS_KEY={data["AWS_SECRET_ACCESS_KEY"]}\n'
             self.env_content += f'AWS_STORAGE_BUCKET_NAME={data["AWS_STORAGE_BUCKET_NAME"]}\n'
@@ -453,7 +462,7 @@ class SettingsView(ModelViewSet):
                 "value": "cloudinary_storage.storage.MediaCloudinaryStorage",
                 "is_string": True
             }
-            
+
             self.env_content += f'\nCLOUD_NAME={data["CLOUD_NAME"]}\n'
             self.env_content += f'API_KEY={data["API_KEY"]}\n'
             self.env_content += f'API_SECRET={data["API_SECRET"]}\n'
@@ -556,12 +565,14 @@ class SetProjectAuth(ModelViewSet):
         active_user = request.user
         validated_data = self.serializer_class(data=request.data)
         validated_data.is_valid(raise_exception=True)
-        
+
         ProjectAuth.objects.filter(project__owner_id=active_user.id).delete()
-        
-        UserStatus.objects.filter(user_id=active_user.id, operation=UserStatuses.create_auth.value).delete()
-        
-        UserStatus.objects.create(user_id=active_user.id, operation=UserStatuses.create_auth.value)
+
+        UserStatus.objects.filter(
+            user_id=active_user.id, operation=UserStatuses.create_auth.value).delete()
+
+        UserStatus.objects.create(
+            user_id=active_user.id, operation=UserStatuses.create_auth.value)
 
         validated_data.save()
 
@@ -575,7 +586,8 @@ class SetProjectAuth(ModelViewSet):
             ProjectAuth.objects.filter(project_id=active_project.id).delete()
             raise Exception(e)
 
-        UserStatus.objects.filter(user_id=active_user.id, operation=UserStatuses.create_auth.value).delete()
+        UserStatus.objects.filter(
+            user_id=active_user.id, operation=UserStatuses.create_auth.value).delete()
         return Response("Auth created successfully", status=201)
 
     def update(self, request, *args, **kwargs):
