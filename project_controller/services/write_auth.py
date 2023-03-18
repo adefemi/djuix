@@ -103,7 +103,10 @@ class WriteAuth(TerminalController):
         data_content += f"\tis_superuser = models.BooleanField(default=False)\n"
         data_content += f"\tis_active = models.BooleanField(default=True)\n"
 
-        fields = self.project_auth.properties["fields"] or []
+        fields = []
+        if self.project_auth.properties and self.project_auth.properties.get("fields", None):
+            fields = self.project_auth.properties["fields"]
+            
         has_slug, slug_data, data = WriteToModel.handle_model_fields(
             fields, data_content, self.get_formatted_name)
         data_content = data
