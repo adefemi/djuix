@@ -22,10 +22,11 @@ class TerminalController(CommandTemplate):
         return f"{self.path}/{self.project_name}/{self.project_name}/"
     
     def handle_terminal_error(self, error):
+        if isinstance(error, str):
+            raise Exception(error)
         traceback_list = traceback.extract_tb(error)
         important_trace = traceback_list[-1]
         file_name, line_number, function_name, error_text = important_trace
-        print(important_trace)
         raise Exception(error_text)
     
     def update_pip(self):
