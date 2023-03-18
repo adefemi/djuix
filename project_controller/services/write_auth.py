@@ -105,9 +105,7 @@ class WriteAuth(TerminalController):
         data_content += f"\tis_superuser = models.BooleanField(default=False)\n"
         data_content += f"\tis_active = models.BooleanField(default=True)\n"
 
-        fields = []
-        if self.project_auth.properties and self.project_auth.properties.get("fields", None):
-            fields = self.project_auth.properties["fields"]
+        fields = self.project_auth.properties["fields"]
 
         has_slug, slug_data, data = WriteToModel.handle_model_fields(
             fields, data_content, self.get_formatted_name)
@@ -235,9 +233,7 @@ class WriteAuth(TerminalController):
         data_content += f"\temail = serializers.EmailField()\n"
         data_content += f"\tusername = serializers.CharField()\n"
 
-        fields = []
-        if self.project_auth.properties and self.project_auth.properties.get("fields", None):
-            fields = self.project_auth.properties["fields"]
+        fields = self.project_auth.properties["fields"]
 
         for field_data in fields:
             field_attrs = field_data.get("field_properties", None)
