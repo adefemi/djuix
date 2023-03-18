@@ -60,8 +60,8 @@ class ProjectView(ModelViewSet):
         data = Helper.normalizer_request(request.data)
         template = data.pop("template", None)
 
-        # UserStatus.objects.create(
-        #     user_id=active_user.id, operation=UserStatuses.create_project.value)
+        UserStatus.objects.create(
+            user_id=active_user.id, operation=UserStatuses.create_project.value)
 
         default_project_path = DEFAULT_PROJECT_DIR
 
@@ -574,8 +574,8 @@ class SetProjectAuth(ModelViewSet):
 
         self.deleteAuthStatus()
 
-        # UserStatus.objects.create(
-        #     user_id=active_user.id, operation=UserStatuses.create_auth.value)
+        UserStatus.objects.create(
+            user_id=active_user.id, operation=UserStatuses.create_auth.value)
 
         validated_data.save()
 
