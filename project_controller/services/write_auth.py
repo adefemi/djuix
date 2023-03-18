@@ -394,18 +394,22 @@ class WriteAuth(TerminalController):
                     continue
                 new_props.append(i)
                 
-            self.project.project_setting.properties["REST_FRAMEWORK"]['properties'] = new_props
-            self.project.project_setting.save()
+            if len(new_props) < 1:
+                del self.project.project_setting.properties["REST_FRAMEWORK"]
+            else:
+                self.project.project_setting.properties["REST_FRAMEWORK"]['properties'] = new_props
+                self.project.project_setting.save()
 
-            if not self.isDel:                    
-                self.project.project_setting.properties["REST_FRAMEWORK"]['properties'].append(
-                    {
-                        "key": "DEFAULT_AUTHENTICATION_CLASSES",
-                        "values": [
-                            f"{self.auth_app_name}.methods.{self.project_auth.default_auth}"
-                        ]
-                    }
-                )
+                if not self.isDel:                    
+                    self.project.project_setting.properties["REST_FRAMEWORK"]['properties'].append(
+                        {
+                            "key": "DEFAULT_AUTHENTICATION_CLASSES",
+                            "values": [
+                                f"{self.auth_app_name}.methods.{self.project_auth.default_auth}"
+                            ]
+                        }
+                    )  
+            
         else:
             if not self.isDel:
                 if self.project_auth.default_auth:
