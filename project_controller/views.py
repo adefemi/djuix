@@ -593,6 +593,8 @@ class SetProjectAuth(ModelViewSet):
 
         UserStatus.objects.filter(
             user_id=active_user.id, operation=UserStatuses.create_auth.value).delete()
+        active_project.run_migration = True
+        active_project.save()
         return Response("Auth created successfully", status=201)
 
     def update(self, request, *args, **kwargs):
@@ -607,6 +609,9 @@ class SetProjectAuth(ModelViewSet):
             write_auth.finalize_process()
         except Exception as e:
             raise Exception(e)
+        
+        active_obj.project.run_migration = True
+        active_obj.project.save()
 
         return Response("Auth updated successfully", status=201)
 
@@ -630,6 +635,8 @@ class SetProjectAuth(ModelViewSet):
 
         write_auth = WriteAuth(active_project, True)
         write_auth.delete_auth()
+        active_project.run_migration = True
+        active_project.save()
 
         return Response("Auth deleted successfully")
 
