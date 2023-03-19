@@ -25,8 +25,6 @@ def custom_exception_handler(exc, context):
     
     if auth_error:
         status_code = 401
-    
-    logging.exception(traceback.format_exc())
 
     return Response({"error": exc_list}, status=status_code)
 
