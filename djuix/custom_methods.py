@@ -7,7 +7,6 @@ import os
 import subprocess
 import boto3
 from django.conf import settings
-import logging
 
 
 def custom_exception_handler(exc, context):
