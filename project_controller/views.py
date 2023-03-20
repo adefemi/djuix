@@ -61,7 +61,7 @@ class ProjectView(ModelViewSet):
         template = data.pop("template", None)
         description = data.get("description", None)
         if not description:
-            data["description"] = f"This is a a default description for your {data.get('name','Django')} project."
+            data["description"] = f"This is a default description for your {data.get('name','Django')} project."
 
         UserStatus.objects.create(
             user_id=active_user.id, operation=UserStatuses.create_project.value)
@@ -167,7 +167,7 @@ class AppView(ModelViewSet):
         data = Helper.normalizer_request(request.data)
         description = data.get("description", None)
         if not description:
-            data["description"] = f"This is a a default description for your {data.get('name','Django')} app."
+            data["description"] = f"This is a default description for your {data.get('name','Django')} app."
         app = process_app_creation(data)
 
         WriteProjectUrl(app.project)
