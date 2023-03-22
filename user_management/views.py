@@ -214,4 +214,7 @@ class FaqView(ModelViewSet):
     permission_classes = []
     queryset = Faq.objects.all()
     
+    def get_queryset(self):
+        return self.queryset.filter(can_show=True)
+    
     
