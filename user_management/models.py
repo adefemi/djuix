@@ -83,3 +83,8 @@ class UserStatus(models.Model):
     user = models.ForeignKey(CustomUser, related_name="user_statuses", on_delete=models.CASCADE)
     operation = models.CharField(max_length=50, choices=(("CREATE_PROJECT", "CREATE_PROJECT"), ("CREATE_AUTH", "CREATE_AUTH")))
     
+class Faq(models.Model):
+    question = models.TextField(unique=True)
+    answer = models.TextField()
+    can_show = models.BooleanField(default=False)
+    

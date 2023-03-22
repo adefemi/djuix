@@ -2,7 +2,7 @@ from rest_framework.viewsets import ModelViewSet
 from .serializers import (
     AuthSerializer, CustomUser, UpdatePasswordSerializer,
     CustomUserSerializer, UserActivities, UserActivitiesSerializer, CreateUserSerializer,
-    VerifyUserSerializer, ResentEmailSerializer
+    VerifyUserSerializer, ResentEmailSerializer, Faq, FaqSerializer
 )
 from .models import VerificationUser
 from rest_framework.response import Response
@@ -207,5 +207,11 @@ class ResendVerification(ModelViewSet):
             message = "Reset instructions sent successfully"
         
         return Response(message)
+    
+    
+class FaqView(ModelViewSet):
+    serializer_class = FaqSerializer
+    permission_classes = []
+    queryset = Faq.objects.all()
     
     

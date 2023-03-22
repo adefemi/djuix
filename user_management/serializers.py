@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import CustomUser, UserActivities, UserStatus
+from .models import CustomUser, UserActivities, UserStatus, Faq
 
 
 class AuthSerializer(serializers.Serializer):
@@ -45,4 +45,11 @@ class UserActivitiesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserActivities
+        fields = "__all__"
+
+
+class FaqSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Faq
         fields = "__all__"
