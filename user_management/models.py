@@ -85,6 +85,6 @@ class UserStatus(models.Model):
     
 class Faq(models.Model):
     question = models.TextField(unique=True)
-    answer = models.TextField()
+    answer = models.TextField(null=True)
     can_show = models.BooleanField(default=False)
     
