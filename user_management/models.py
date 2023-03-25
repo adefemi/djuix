@@ -97,3 +97,6 @@ class Faq(models.Model):
 class Documentation(models.Model):
     title = models.CharField(max_length=100, unique=True)
     link = models.TextField()
+    
+    def __str__(self):
+        return self.title
