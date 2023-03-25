@@ -2,7 +2,8 @@ from rest_framework.viewsets import ModelViewSet
 from .serializers import (
     AuthSerializer, CustomUser, UpdatePasswordSerializer,
     CustomUserSerializer, UserActivities, UserActivitiesSerializer, CreateUserSerializer,
-    VerifyUserSerializer, ResentEmailSerializer, Faq, FaqSerializer
+    VerifyUserSerializer, ResentEmailSerializer, Faq, FaqSerializer,
+    Documentation, DocumentationSerializer
 )
 from .models import VerificationUser
 from rest_framework.response import Response
@@ -216,5 +217,11 @@ class FaqView(ModelViewSet):
     
     def get_queryset(self):
         return self.queryset.filter(can_show=True)
+    
+
+class DocumentationView(ModelViewSet):
+    serializer_class = DocumentationSerializer
+    permission_classes = []
+    queryset = Documentation.objects.all()
     
     

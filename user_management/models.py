@@ -3,8 +3,9 @@ from django.contrib.auth.models import (
     AbstractBaseUser, PermissionsMixin, BaseUserManager
 )
 
+
 class CustomUserManager(BaseUserManager):
-    
+
     def create_user(self, username, email, password, **extra_fields):
         user = self.model(email=email, username=username, **extra_fields)
         user.set_password(password)
@@ -24,7 +25,7 @@ class CustomUserManager(BaseUserManager):
 
         if not email:
             raise ValueError("Email field is required")
-        
+
         if not username:
             raise ValueError("Username field is required")
 
@@ -49,7 +50,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = "email"
     objects = CustomUserManager()
-    
+
     REQUIRED_FIELDS = ['username']
 
     def __str__(self):
@@ -71,20 +72,28 @@ class UserActivities(models.Model):
 
     def __str__(self):
         return f"{self.email} {self.action} on {self.created_at.strftime('%Y-%m-%d %H:%M')}"
-    
+
 
 class VerificationUser(models.Model):
-    user = models.OneToOneField(CustomUser, related_name="is_under_verification", on_delete=models.CASCADE)
+    user = models.OneToOneField(
+        CustomUser, related_name="is_under_verification", on_delete=models.CASCADE)
     expiry = models.DateTimeField()
     token = models.CharField(max_length=50)
-    
+
 
 class UserStatus(models.Model):
-    user = models.ForeignKey(CustomUser, related_name="user_statuses", on_delete=models.CASCADE)
-    operation = models.CharField(max_length=50, choices=(("CREATE_PROJECT", "CREATE_PROJECT"), ("CREATE_AUTH", "CREATE_AUTH")))
-    
+    user = models.ForeignKey(
+        CustomUser, related_name="user_statuses", on_delete=models.CASCADE)
+    operation = models.CharField(max_length=50, choices=(
+        ("CREATE_PROJECT", "CREATE_PROJECT"), ("CREATE_AUTH", "CREATE_AUTH")))
+
+
 class Faq(models.Model):
     question = models.TextField(unique=True)
     answer = models.TextField(null=True)
     can_show = models.BooleanField(default=False)
-    
+
+
+class Documentation(models.Model):
+    title = models.CharField(max_length=100, unique=True)
+    link = models.TextField()
