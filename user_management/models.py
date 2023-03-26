@@ -92,6 +92,9 @@ class Faq(models.Model):
     question = models.TextField(unique=True)
     answer = models.TextField(null=True)
     can_show = models.BooleanField(default=False)
+    
+    def __str__(self):
+        return self.question
 
 
 class Documentation(models.Model):
@@ -100,3 +103,11 @@ class Documentation(models.Model):
     
     def __str__(self):
         return self.title
+
+
+class Issue(models.Model):
+    issue = models.TextField(unique=True)
+    can_show = models.BooleanField(default=True)
+    
+    def __str__(self):
+        return self.issue

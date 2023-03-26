@@ -3,7 +3,7 @@ from .serializers import (
     AuthSerializer, CustomUser, UpdatePasswordSerializer,
     CustomUserSerializer, UserActivities, UserActivitiesSerializer, CreateUserSerializer,
     VerifyUserSerializer, ResentEmailSerializer, Faq, FaqSerializer,
-    Documentation, DocumentationSerializer
+    Documentation, DocumentationSerializer, Issue, IssueSerializer,
 )
 from .models import VerificationUser
 from rest_framework.response import Response
@@ -225,3 +225,10 @@ class DocumentationView(ModelViewSet):
     queryset = Documentation.objects.all()
     
     
+class IssueView(ModelViewSet):
+    serializer_class = IssueSerializer
+    permission_classes = []
+    queryset = Issue.objects.all()
+    
+    def get_queryset(self):
+        return self.queryset.filter(can_show=True)
