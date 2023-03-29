@@ -20,7 +20,7 @@ class WriteToModel(WriterMain):
         for model in self.models:
             field_properties = model.field_properties
             fields = field_properties["fields"]
-            self.content_data = self.check_for_import(fields, self.content_data)
+            self.check_for_import(fields)
 
         for model in self.models:
             self.content_data += f"\n\nclass {model.name}(models.Model):\n"
@@ -128,13 +128,11 @@ class WriteToModel(WriterMain):
         data += f"\t\tsuper().save(*args, **kwargs)\n"
         return data
       
-    def check_for_import(self, fields, data):
+    def check_for_import(self, fields):
         for field_data in fields:    
             if field_data["field_type"] == ModelFieldTypes.SlugField and not self.has_slug:
-                data += "from django.utils.text import slugify\n"
+                self.content_data += "from django.utils.text import slugify\n"
                 self.has_slug = True
-                
-        return data
   
     @staticmethod
     def handle_model_fields(fields, data, get_formatted_name_func):
