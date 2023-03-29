@@ -82,7 +82,7 @@ class BlogControl(AppCreation):
                 "has_updated_at": True,
                 "string_representation": [
                     "title",
-                    "author.username"
+                    "author"
                 ],
                 "meta": {
                     "ordering": "('-created_at',)",
