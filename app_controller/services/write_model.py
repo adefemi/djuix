@@ -16,12 +16,11 @@ class WriteToModel(WriterMain):
     def write_model(self):
         # define the base structure
         print("writing model")
-        has_slug_import = False
         self.content_data = "from django.db import models\n"
         for model in self.models:
             field_properties = model.field_properties
             fields = field_properties["fields"]
-            self.check_for_import(fields, has_slug_import, self.content_data)
+            self.check_for_import(fields, self.content_data)
 
         for model in self.models:
             self.content_data += f"\n\nclass {model.name}(models.Model):\n"
@@ -121,6 +120,7 @@ class WriteToModel(WriterMain):
         field_name = slug_data["field_name"]
         field_to_use = slug_data["field_to_use"]
         data += f"\t\tself.{field_name} = slugify(self.{field_to_use}, allow_unicode=True)\n"
+        data += f"\t\tsuper().save(args, kwargs)\n"
         return data
     
     @staticmethod    
@@ -128,12 +128,11 @@ class WriteToModel(WriterMain):
         data += f"\t\tsuper().save(*args, **kwargs)\n"
         return data
       
-    @staticmethod  
-    def check_for_import(fields, slug_import, data):
+    def check_for_import(self, fields, data):
         for field_data in fields:    
-            if field_data["field_type"] == ModelFieldTypes.SlugField and not slug_import:
+            if field_data["field_type"] == ModelFieldTypes.SlugField and not self.has_slug:
                 data += "from django.utils.text import slugify\n"
-                slug_import = True
+                self.has_slug = True
                 
         return data
   
