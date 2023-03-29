@@ -85,7 +85,7 @@ class BlogControl(AppCreation):
                     "author"
                 ],
                 "meta": {
-                    "ordering": "('-created_at',)",
+                    "ordering": "('-created_at', )",
                 }
             },
             
