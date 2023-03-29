@@ -47,6 +47,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     last_login = models.DateTimeField(null=True)
     last_activity = models.DateTimeField(null=True)
     removed_folder = models.BooleanField(default=False)
+    project_count = models.IntegerField(default=2)
 
     USERNAME_FIELD = "email"
     objects = CustomUserManager()

@@ -57,6 +57,11 @@ class ProjectView(ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         active_user = request.user
+
+        if active_user.project_owner.all().count() == active_user.project_count:
+            raise Exception(
+                f"You have exhausted your {active_user.project_count} project creation allocation")
+
         data = Helper.normalizer_request(request.data)
         template = data.pop("template", None)
         description = data.get("description", None)
@@ -565,7 +570,7 @@ class GetProjectUrls(ModelViewSet):
 class SetProjectAuth(ModelViewSet):
     serializer_class = ProjectAuthSerializer
     queryset = ProjectAuth.objects.all()
-    
+
     def deleteAuthStatus(self):
         UserStatus.objects.filter(
             user_id=self.request.user.id, operation=UserStatuses.create_auth.value).delete()
@@ -616,7 +621,7 @@ class SetProjectAuth(ModelViewSet):
             write_auth.finalize_process()
         except Exception as e:
             raise Exception(e)
-        
+
         active_obj.project.run_migration = True
         active_obj.project.save()
 
