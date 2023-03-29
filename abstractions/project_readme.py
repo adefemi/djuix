@@ -1,5 +1,5 @@
 readme_content = """
-# README.md
+# Djuix.io - README.md
 
 This README provides an overview of the project setup and instructions on how to run the server and create a super admin for your Djuix project.
 
@@ -29,9 +29,9 @@ This project uses two shell scripts to streamline the setup process:
 
 To start the Django server, run the following command in the terminal:
 
-\`\`\`bash
+```bash
 ./start_server.sh
-\`\`\`
+```
 
 This script activates the virtual environment, changes the directory to the Django project folder, installs dependencies, and starts the server.
 
@@ -39,9 +39,9 @@ This script activates the virtual environment, changes the directory to the Djan
 
 To create a super admin for your Django project, run the following command in the terminal:
 
-\`\`\`bash
+```bash
 ./create_super_admin.sh
-\`\`\`
+```
 
 This script activates the virtual environment, changes the directory to the Django project folder, installs dependencies, and creates a super admin by running the `createsuperuser` management command.
 
@@ -49,9 +49,9 @@ This script activates the virtual environment, changes the directory to the Djan
 
 Ensure that both shell scripts (`start_server.sh` and `create_super_admin.sh`) have executable permissions. You can set the permissions by running the following command:
 
-\`\`\`bash
+```bash
 chmod +x start_server.sh create_super_admin.sh
-\`\`\`
+```
 
 If you encounter any issues, please consult the [Django documentation](https://docs.djangoproject.com/) for further guidance.
 
