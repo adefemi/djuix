@@ -22,9 +22,9 @@ class BlogControl(AppCreation):
                     },
                 ],
                 "has_created_at": True, 
-                "string_representation": [
-                    "title",
-                ]
+                # "string_representation": [
+                #     "title",
+                # ]
             },
             
             "Blog": {
@@ -80,10 +80,10 @@ class BlogControl(AppCreation):
                 ],
                 "has_created_at": True,
                 "has_updated_at": True,
-                "string_representation": [
-                    "title",
-                    "author"
-                ],
+                # "string_representation": [
+                #     "title",
+                #     "author"
+                # ],
                 "meta": {
                     "ordering": "('-created_at', )",
                 }
@@ -125,10 +125,10 @@ class BlogControl(AppCreation):
                 ],
                 "has_created_at": True,
                 "has_updated_at": True,
-                "string_representation": [
-                    "blog.title",
-                    "author",
-                ],
+                # "string_representation": [
+                #     "blog.title",
+                #     "author",
+                # ],
                 "meta": {
                     "ordering": "('-created_at',)",
                 }
