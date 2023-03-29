@@ -20,7 +20,7 @@ class WriteToModel(WriterMain):
         for model in self.models:
             field_properties = model.field_properties
             fields = field_properties["fields"]
-            self.check_for_import(fields, self.content_data)
+            self.content_data = self.check_for_import(fields, self.content_data)
 
         for model in self.models:
             self.content_data += f"\n\nclass {model.name}(models.Model):\n"
