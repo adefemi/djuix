@@ -7,6 +7,7 @@ import os
 import subprocess
 import boto3
 from django.conf import settings
+from abstractions.project_readme import readme_content
 
 
 def custom_exception_handler(exc, context):
@@ -72,6 +73,15 @@ def setup_for_download(project):
     dir_controller = DirectoryManager(project.project_path)
     term_controller = TerminalController("", project)
     
+    file_path = os.path.join(project.project_path, 'Readme.md')
+    try:
+        DirectoryManager.delete_file(file_path)
+    except Exception:
+        pass
+    
+    start_server_file = dir_controller.create_file('/Readme.md')
+    dir_controller.write_file(start_server_file, readme_content)
+    
     
     start_server_content = f"""
 #!/bin/bash
@@ -82,7 +92,7 @@ source {term_controller.get_env()}/bin/activate
 # Charge to the directory where the Django project is located
 cd {term_controller.project_name}
 
-pip install -r requirements.txt
+pip3 install -r requirements.txt
         
 # Start the Django development server
 python3 manage.py runserver
@@ -107,7 +117,7 @@ source {term_controller.get_env()}/bin/activate
 # Charge to the directory where the Django project is located
 cd {term_controller.project_name}
 
-pip install -r requirements.txt
+pip3 install -r requirements.txt
         
 # Start the Django development server
 python3 manage.py createsuperuser
