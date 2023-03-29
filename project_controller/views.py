@@ -60,7 +60,7 @@ class ProjectView(ModelViewSet):
 
         if active_user.project_owner.all().count() == active_user.project_count:
             raise Exception(
-                f"You have exhausted your {active_user.project_count} project creation allocation")
+                f"You have reached your limit of {active_user.project_count} project creations. To free up space, please delete one of your existing projects.")
 
         data = Helper.normalizer_request(request.data)
         template = data.pop("template", None)
