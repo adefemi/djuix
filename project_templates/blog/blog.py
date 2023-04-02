@@ -10,7 +10,7 @@ class BlogControl(AppCreation):
         # set up model fields
         # blog model object is made up of the model name as the key and the fields information as the value
         self.model_data = {
-            "BlogTag": {
+            "BlogTagModel": {
                 "fields": [
                     {
                         "name": "title",
@@ -27,7 +27,7 @@ class BlogControl(AppCreation):
                 # ]
             },
             
-            "Blog": {
+            "BlogModel": {
                 "fields": [
                     {
                         "name": "tags",
@@ -89,7 +89,7 @@ class BlogControl(AppCreation):
                 }
             },
             
-            "BlogComment": {
+            "BlogCommentModel": {
                 "fields": [
                     {
                         "name": "blog",
