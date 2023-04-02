@@ -37,12 +37,6 @@ class ModelInfo(models.Model):
 
     def __str__(self):
         return f"{self.app.project.name} - {self.app.name} - {self.name}"
-    
-    def save(self, *args, **kwargs):
-        if not self.pk:
-            a = "".join([i.capitalize() for i in re.split('-|_| ', self.name)])
-            self.name = a
-        return super().save(*args, **kwargs)
 
 
 class SerializerInfo(models.Model):
@@ -63,15 +57,6 @@ class SerializerInfo(models.Model):
 
     def __str__(self):
         return f"{self.model_relation.app.name} - {self.name}"
-    
-    def save(self, *args, **kwargs):
-        if not self.pk:
-            a = "".join([i.capitalize() for i in re.split('-|_| ', self.name)])
-            if "serializer" in a.lower():
-                a = a.lower().replace("serializer", "").capitalize()
-            a = f"{a}Serializer"
-            self.name = a
-        return super().save(*args, **kwargs)
     
     
 class ViewsInfo(models.Model):
@@ -96,15 +81,6 @@ class ViewsInfo(models.Model):
 
     def __str__(self):
         return f"{self.serializer_relation.model_relation.app.name} - {self.name}"
-    
-    def save(self, *args, **kwargs):
-        if not self.pk:
-            a = "".join([i.capitalize() for i in re.split('-|_| ', self.name)])
-            if "view" in a.lower():
-                a = a.lower().replace("view", "").capitalize()
-            a = f"{a}View"
-            self.name = a
-        return super().save(*args, **kwargs)
     
 
 class UrlInfo(models.Model):
