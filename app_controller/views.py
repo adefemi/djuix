@@ -53,7 +53,7 @@ class ModelInfoView(ModelViewSet):
             execute_model_creation(active_model, True)
         except Exception as e:
             active_model.delete()
-            raise Exception("Encountered error creating model: %s" % e.message)
+            raise Exception("Encountered error creating model: %s" % e)
 
         return Response("Model created", status=201)
 
@@ -77,7 +77,7 @@ class ModelInfoView(ModelViewSet):
             has_changed_fields = execute_model_update(
                 instance, normalized_data)
         except Exception as e:
-            raise Exception("Encountered error updating model: %s" % e.message)
+            raise Exception("Encountered error updating model: %s" % e)
 
         try:
             with transaction.atomic():
@@ -93,7 +93,7 @@ class ModelInfoView(ModelViewSet):
         except Exception as e:
             active_model = self.get_object()
             execute_model_creation(active_model, False, True)
-            raise Exception("Encountered error creating model: %s" % e.message)
+            raise Exception("Encountered error creating model: %s" % e)
 
         return Response("Model updated", status=200)
 
