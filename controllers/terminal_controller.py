@@ -6,6 +6,7 @@ from controllers.command_template import CommandTemplate, OsType
 from djuix.functions import send_process_message
 from .directory_controller import DirectoryManager
 import traceback
+import re
 
 
 class TerminalController(CommandTemplate):
@@ -13,31 +14,41 @@ class TerminalController(CommandTemplate):
     def __init__(self, path, project, delete_if_project_exist=False, active_user_id=None):
         super().__init__(OsType.mac)
         self.path = self.transform_path(path)
-        self.project = project 
+        self.project = project
         self.project_name = project.formatted_name
         self.delete_if_project_exist = delete_if_project_exist
         self.active_user = active_user_id
-        
+
     def get_settings_path(self):
         return f"{self.path}/{self.project_name}/{self.project_name}/"
-    
+
     def handle_terminal_error(self, error):
-        # if isinstance(error, str):
-        #     raise Exception(error)
-        traceback_list = traceback.extract_tb(error)
-        important_trace = traceback_list[-1]
-        file_name, line_number, function_name, error_text = important_trace
+        if isinstance(error, str):
+            # Extract traceback information from error string
+            match = re.search(r'File "(.+)", line (\d+), in (.+)', error)
+            if match:
+                file_name, line_number, function_name = match.groups()
+                line_number = int(line_number)
+                error_text = error.splitlines()[-1]
+            else:
+                raise Exception(error)
+        else:
+            traceback_list = traceback.extract_tb(error)
+            important_trace = traceback_list[-1]
+            file_name, line_number, function_name, error_text = important_trace
+
         raise Exception(error_text)
-    
+
     def update_pip(self):
         command = "pip install --upgrade pip"
         command_template = self.get_access_template(command)
-        p = subprocess.Popen(command_template, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        p = subprocess.Popen(
+            command_template, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         p.wait()
         [_, err] = p.communicate()
         if err:
             self.handle_terminal_error(err.decode())
-        
+
         return True
 
     def create_project(self):
@@ -47,34 +58,37 @@ class TerminalController(CommandTemplate):
         self.create_env()
         if self.active_user:
             self.install_packages()
-        
+
         command = 'django-admin startproject'
 
         command_template = self.get_access_template(command, self.project_name)
-        p = subprocess.Popen(command_template, cwd=self.path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        p = subprocess.Popen(command_template, cwd=self.path,
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         p.wait()
         [_, err] = p.communicate()
         if err:
             self.handle_terminal_error(err.decode())
-            
+
         self.finalize_process()
 
         return True
-    
+
     def check_user_folder(self):
-        self.path = os.path.join(self.path, self.project.owner.username.lower())
+        self.path = os.path.join(
+            self.path, self.project.owner.username.lower())
         path_exist = DirectoryManager.check_if_path_exist(self.path)
         if not path_exist:
             DirectoryManager.create_directory(self.path)
-    
+
     def define_project_standard_name(self):
         return self.project_name + "_main"
-    
+
     def create_project_folder(self, name=None):
         if self.active_user:
-            send_process_message(self.active_user, "creating project folder...")
+            send_process_message(
+                self.active_user, "creating project folder...")
         project_name = self.define_project_standard_name()
-        
+
         if os.path.exists(self.get_project_full_path()):
             command_template = "rm -r {}"
             command = shlex.split(command_template.format(project_name))
@@ -84,35 +98,37 @@ class TerminalController(CommandTemplate):
             [_, err] = p.communicate()
             if err:
                 self.handle_terminal_error(err.decode())
-        
+
         p = subprocess.Popen(["mkdir", project_name], cwd=self.path,
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         p.wait()
         [_, err] = p.communicate()
         if err:
             self.handle_terminal_error(err.decode())
-        
+
         self.path = f"{self.path}/{project_name}"
-        
+
         print("created project folder")
-        
+
         return True
-    
+
     def check_if_project_already_exist(self):
-        project_path = os.path.join(self.path, self.define_project_standard_name())
+        project_path = os.path.join(
+            self.path, self.define_project_standard_name())
         if os.path.exists(project_path):
             if self.delete_if_project_exist:
                 DirectoryManager.delete_directory(project_path)
             else:
-                raise Exception("A project with the provided path already exist")
+                raise Exception(
+                    "A project with the provided path already exist")
         return True
 
     def get_env(self):
         return self.project_name + "_env"
-    
+
     def get_project_full_path(self):
         return f"{self.path}/{self.project_name}"
-    
+
     @staticmethod
     def transform_path(path):
         return path.replace("\\", "/")
@@ -127,37 +143,40 @@ class TerminalController(CommandTemplate):
         [_, err] = p.communicate()
         if err:
             self.handle_terminal_error(err.decode())
-        
+
         print("created virtual env")
         return True
 
     def install_packages(self, my_packages=PACKAGE_LIST, send_socket=True):
         if send_socket:
             send_process_message(self.active_user, "Updating pip...", 0)
-            
+
         self.update_pip()
         if send_socket:
-            send_process_message(self.active_user, "installing required packages...", 0)
-        
+            send_process_message(
+                self.active_user, "installing required packages...", 0)
+
         packages_to_use = my_packages
         try:
             if self.project.project_auth:
                 packages_to_use.append(OPTIONAL_PACKAGES['pyJwt'])
         except:
             pass
-        
+
         package_string_list = ""
         for package in packages_to_use:
             package_string_list += package["version"] + " "
-            
+
         command = "pip install"
-        command_template = self.get_access_template(command, package_string_list)
-        p = subprocess.Popen(command_template, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        command_template = self.get_access_template(
+            command, package_string_list)
+        p = subprocess.Popen(
+            command_template, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         p.wait()
         [_, err] = p.communicate()
         if err:
             self.handle_terminal_error(err.decode())
-        
+
         return True
 
     def create_app(self, app_name):
@@ -185,38 +204,41 @@ class TerminalController(CommandTemplate):
         return True
 
     def run_migration(self):
-        settings_path = f"{self.project_name}.settings";
+        settings_path = f"{self.project_name}.settings"
         export_settings = f"DJANGO_SETTINGS_MODULE={settings_path}"
-        
+
         export_op_key = "SET"
         if self.os_type == OsType.mac:
-            export_op_key =  "export"
-            
+            export_op_key = "export"
+
         project_dir = self.get_project_full_path()
-        
+
         command = f"{export_op_key} {export_settings} && cd {project_dir} && python manage.py makemigrations --noinput && python manage.py migrate"
         command_template = self.get_access_template(command, "")
-        
-        p = subprocess.Popen(command_template, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        p = subprocess.Popen(
+            command_template, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         [_, err] = p.communicate()
         if err:
             self.handle_terminal_error(err.decode())
-        
+
         if p.returncode == 3:
-            raise Exception("We could not fulfill the request for the modification. We sugestions you provide a default value for fields just added")
+            raise Exception(
+                "We could not fulfill the request for the modification. We sugestions you provide a default value for fields just added")
 
         return True
-    
+
     def finalize_process(self):
         # freeze out the required packages
         django_folder_path = os.path.join(self.path, self.project_name)
         command = "pip freeze > requirements.txt"
         command_template = self.get_access_template(command)
-        p = subprocess.Popen(command_template, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=django_folder_path)
+        p = subprocess.Popen(command_template, stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE, cwd=django_folder_path)
         p.wait()
         [_, err] = p.communicate()
         if err:
             self.handle_terminal_error(err.decode())
-        
+
         return True
