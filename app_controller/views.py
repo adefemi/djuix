@@ -60,11 +60,15 @@ class ModelInfoView(ModelViewSet):
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         normalized_data = Helper.normalizer_request(request.data)
+        model_name_changed = False
 
         try:
-            if check_name_change(instance.name, normalized_data["name"]):
-                name = format_model_name(normalized_data["name"])
-                normalized_data["name"] = name
+            model_name_changed = check_name_change(
+                instance.name, normalized_data["name"])
+
+            name = format_model_name(normalized_data["name"])
+            normalized_data["name"] = name
+
         except Exception as e:
             normalized_data["name"] = instance.name
 
