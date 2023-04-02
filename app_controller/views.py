@@ -50,7 +50,7 @@ class ModelInfoView(ModelViewSet):
         active_model = self.queryset.get(id=serialized_data.data["id"])
 
         try:
-            execute_model_creation(active_model)
+            execute_model_creation(active_model, True)
         except Exception as e:
             active_model.delete()
             raise Exception("Encountered error creating model: %s" % e.message)
