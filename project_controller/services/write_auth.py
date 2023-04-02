@@ -107,8 +107,7 @@ class WriteAuth(TerminalController):
 
         fields = self.project_auth.properties["fields"]
 
-        has_slug, slug_data, data = WriteToModel.handle_model_fields(
-            fields, data_content, self.get_formatted_name)
+        has_slug, slug_data, data = WriteToModel.handle_model_fields(fields, data_content)
         data_content = data
 
         data_content = WriteToModel.format_has_created_date(data_content)
