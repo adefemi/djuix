@@ -33,7 +33,7 @@ class BlogControl(AppCreation):
                         "name": "tags",
                         "field_type": ModelFieldTypes.ManyToManyField,
                         "field_properties": {
-                            "related_model_name": "BlogTag",
+                            "related_model_name": "BlogTagModel",
                             "related_name": "blog_tags",
                         }
                     },
@@ -95,7 +95,7 @@ class BlogControl(AppCreation):
                         "name": "blog",
                         "field_type": ModelFieldTypes.ForeignKey,
                         "field_properties": {
-                            "related_model_name": "Blog",
+                            "related_model_name": "BlogModel",
                             "related_name": "blog_comments",
                             "on_delete": "models.CASCADE"
                         }
@@ -138,7 +138,7 @@ class BlogControl(AppCreation):
         self.serializer_data = {
             "BlogTagSerializer": {
                 "meta": {
-                    "model": "BlogTag",
+                    "model": "BlogTagModel",
                     "fields": "['id', 'title']"
                 },
                 "type": "ModelSerializer",
@@ -174,7 +174,7 @@ class BlogControl(AppCreation):
                     # },
                 ],
                 "meta": {
-                    "model": "Blog",
+                    "model": "BlogModel",
                     "fields": "'__all__'",
                 },
                 "type": "ModelSerializer",
@@ -198,7 +198,7 @@ class BlogControl(AppCreation):
                     },
                 ],
                 "meta": {
-                    "model": "BlogComment",
+                    "model": "BlogCommentModel",
                     "fields": "'__all__'",
                 },
                 "type": "ModelSerializer",
