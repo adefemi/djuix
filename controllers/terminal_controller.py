@@ -7,6 +7,7 @@ from djuix.functions import send_process_message
 from .directory_controller import DirectoryManager
 import traceback
 import re
+from datetime import datetime
 
 
 class TerminalController(CommandTemplate):
@@ -203,6 +204,25 @@ class TerminalController(CommandTemplate):
 
         return True
 
+    def remove_bad_migrations(self, timestamp):
+        for app in self.project.project_apps.all():
+            try:
+                migrations_path = f"{self.get_project_full_path()}/{app.formatted_name}/migrations"
+                if os.path.exists(migrations_path):
+                    for filename in os.listdir(migrations_path):
+                        if filename.endswith('.py') and filename != '__init__.py':
+                            # Get the creation time of the migration file
+                            migration_file_path = os.path.join(migrations_path, filename)
+                            creation_time = datetime.fromtimestamp(os.path.getctime(migration_file_path))
+
+                            # Compare the creation time with the threshold
+                            if creation_time > timestamp:
+                                # Delete the migration file
+                                os.remove(migration_file_path)
+                                print(f"Deleted migration file: {migration_file_path}")
+            except Exception as e:
+                print(f"Error processing app '{app}': {e}")
+
     def run_migration(self):
         settings_path = f"{self.project_name}.settings"
         export_settings = f"DJANGO_SETTINGS_MODULE={settings_path}"
@@ -213,6 +233,7 @@ class TerminalController(CommandTemplate):
 
         project_dir = self.get_project_full_path()
 
+        timestamp_threshold = datetime.now()
         command = f"{export_op_key} {export_settings} && cd {project_dir} && python manage.py makemigrations --noinput && python manage.py migrate"
         command_template = self.get_access_template(command, "")
 
@@ -221,6 +242,7 @@ class TerminalController(CommandTemplate):
 
         [_, err] = p.communicate()
         if err:
+            self.remove_bad_migrations(timestamp_threshold)
             self.handle_terminal_error(err.decode())
 
         if p.returncode == 3:
