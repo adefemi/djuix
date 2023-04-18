@@ -252,7 +252,7 @@ class BlogControl(AppCreation):
                 # ],
             },
             "TopBlogView": {
-                "model": "Blog",
+                "model": "BlogModel",
                 "serializer": "BlogSerializer",
                 "http_method_names": [
                     "get",
@@ -264,7 +264,7 @@ class BlogControl(AppCreation):
                 }
             },
             "SimilarBlogView": {
-                "model": "Blog",
+                "model": "BlogModel",
                 "serializer": "BlogSerializer",
                 "http_method_names": [
                     "get",
