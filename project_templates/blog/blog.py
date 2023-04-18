@@ -30,11 +30,11 @@ class BlogControl(AppCreation):
             "BlogModel": {
                 "fields": [
                     {
-                        "name": "tags",
-                        "field_type": ModelFieldTypes.ManyToManyField,
+                        "name": "tag",
+                        "field_type": ModelFieldTypes.ForeignKey,
                         "field_properties": {
                             "related_model_name": "BlogTagModel",
-                            "related_name": "blog_tags",
+                            "related_name": "blogs",
                         }
                     },
                     {
@@ -55,10 +55,10 @@ class BlogControl(AppCreation):
                     },
                     {
                         "name": "slug",
-                        
                         "field_type": ModelFieldTypes.SlugField,
                         "field_properties": {
                             "field_reference": "title",
+                            "unique": "True",
                             "default": "",
                             "max_length": "255",
                             "editable": "False"
@@ -146,14 +146,21 @@ class BlogControl(AppCreation):
             "BlogSerializer": {
                 "fields": [
                     {
-                        "name": "tags",
+                        "name": "tag",
                         "field_type": "BlogTagSerializer",
                         "is_custom_type": True,
                         "field_properties": {
-                            "many": "True",
                             "read_only": "True",
                         }
                     },
+                    {
+                        "name": "tag_id",
+                        "field_type": SerializerFieldTypes.IntegerField,
+                        "field_properties": {
+                            "write_only": "True",
+                        }
+                    },
+                    
                     # {
                     #     "name": "author",
                     #     "field_type": "CustomUserSerializer",
@@ -218,26 +225,26 @@ class BlogControl(AppCreation):
                         "tags__title",
                     ]
                 },
-                "override_create": {
-                    "add_many_to_many": [
-                        {
-                            "field_name": "tags",
-                            "field_body_key": "tags",
-                            "field_model": "BlogTag",
-                            "field_check_key": "title"
-                        }
-                    ]
-                },
-                "override_update": {
-                    "update_many_to_many": [
-                        {
-                            "field_name": "tags",
-                            "field_body_key": "tags",
-                            "field_model": "BlogTag",
-                            "field_check_key": "title"
-                        }
-                    ]
-                }
+                # "override_create": {
+                #     "add_many_to_many": [
+                #         {
+                #             "field_name": "tags",
+                #             "field_body_key": "tags",
+                #             "field_model": "BlogTag",
+                #             "field_check_key": "title"
+                #         }
+                #     ]
+                # },
+                # "override_update": {
+                #     "update_many_to_many": [
+                #         {
+                #             "field_name": "tags",
+                #             "field_body_key": "tags",
+                #             "field_model": "BlogTag",
+                #             "field_check_key": "title"
+                #         }
+                #     ]
+                # }
             },
             "BlogCommentView": {},
             "BlogTagView": {
