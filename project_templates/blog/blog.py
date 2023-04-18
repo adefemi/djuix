@@ -35,6 +35,7 @@ class BlogControl(AppCreation):
                         "field_properties": {
                             "related_model_name": "BlogTagModel",
                             "related_name": "blogs",
+                            "on_delete": "models.CASCADE"
                         }
                     },
                     {
