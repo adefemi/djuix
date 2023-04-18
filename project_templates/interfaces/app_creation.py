@@ -34,7 +34,7 @@ class AppCreation:
     def createSerializer(self):
         serializer_objs = []
         for key, value in self.serializer_data.items():
-            model_relation = ModelInfo.objects.filter(app_id=self.app.id, name=key.replace("Serializer", ""))
+            model_relation = ModelInfo.objects.filter(app_id=self.app.id, name=key.replace("Serializer", "Model"))
             if not model_relation:
                 continue
             tem_data = {
