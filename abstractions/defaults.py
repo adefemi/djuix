@@ -378,6 +378,10 @@ MODEL_REQUIREMENT = {
         "blank": {
             "type": "boolean",
             "name": "blank"
+        },
+        "editable": {
+            "type": "boolean",
+            "name": "Editable"
         }
     }
 }
