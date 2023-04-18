@@ -219,12 +219,6 @@ class BlogControl(AppCreation):
                     ]
                 },
                 "override_create": {
-                    "update_data_field": [
-                        {
-                            "field_name": "author_id",
-                            "field_from": "auth_user"
-                        }
-                    ],
                     "add_many_to_many": [
                         {
                             "field_name": "tags",
