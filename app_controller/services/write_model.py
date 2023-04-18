@@ -124,7 +124,7 @@ class WriteToModel(WriterMain):
         field_name = slug_data["field_name"]
         field_to_use = slug_data["field_to_use"]
         data += f"\t\tself.{field_name} = slugify(self.{field_to_use}, allow_unicode=True)\n"
-        data += f"\t\tsuper().save(args, kwargs)\n"
+        data += f"\t\tsuper().save(*args, **kwargs)\n"
         return data
 
     @staticmethod

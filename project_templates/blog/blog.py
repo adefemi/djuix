@@ -223,7 +223,7 @@ class BlogControl(AppCreation):
                     "search_key": "keyword",
                     "search_fields": [
                         "title",
-                        "tags__title",
+                        "tag__title",
                     ]
                 },
                 # "override_create": {
