@@ -381,7 +381,7 @@ MODEL_REQUIREMENT = {
         },
         "editable": {
             "type": "boolean",
-            "name": "Not Editable",
+            "name": "Editable",
             "isNegative": True
         }
     }
