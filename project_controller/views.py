@@ -357,7 +357,7 @@ class SettingsView(ModelViewSet):
         if self.env_content:
             self.control_env("create")
 
-        if str(current_db) != str(new_props["DATABASES"]):
+        if database_data:
             active_setting.project.run_migration = True
 
         if {'AWS_ACCESS_KEY_ID', 'CLOUDINARY_STORAGE'} <= new_props.keys():

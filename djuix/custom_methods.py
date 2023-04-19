@@ -93,6 +93,8 @@ source {term_controller.get_env()}/bin/activate
 cd {term_controller.project_name}
 
 pip3 install -r requirements.txt
+
+python3 manage.py migrate
         
 # Start the Django development server
 python3 manage.py runserver
@@ -118,6 +120,8 @@ source {term_controller.get_env()}/bin/activate
 cd {term_controller.project_name}
 
 pip3 install -r requirements.txt
+
+python3 manage.py migrate
         
 # Start the Django development server
 python3 manage.py createsuperuser
