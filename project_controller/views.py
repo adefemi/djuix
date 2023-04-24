@@ -318,7 +318,7 @@ class SettingsView(ModelViewSet):
         current_cloudinary = str(
             active_setting.properties.get('CLOUDINARY_STORAGE', ''))
 
-        current_db = active_setting.properties["DATABASES"]
+        current_db = str(active_setting.properties["DATABASES"])
 
         self.terminal_controller = TerminalController(
             active_setting.project.project_path, active_setting.project)
@@ -350,7 +350,7 @@ class SettingsView(ModelViewSet):
         self.terminal_controller.finalize_process()
 
         new_props = self.get_object().properties
-        new_db = self.get_object().properties["DATABASES"]
+        new_db = str(self.get_object().properties["DATABASES"])
 
         write_settings = WriteSettings(active_setting.project)
         write_settings.update_setting(new_props)
