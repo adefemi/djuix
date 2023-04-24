@@ -350,6 +350,7 @@ class SettingsView(ModelViewSet):
         self.terminal_controller.finalize_process()
 
         new_props = self.get_object().properties
+        new_db = self.get_object().properties["DATABASES"]
 
         write_settings = WriteSettings(active_setting.project)
         write_settings.update_setting(new_props)
@@ -357,7 +358,7 @@ class SettingsView(ModelViewSet):
         if self.env_content:
             self.control_env("create")
 
-        if database_data:
+        if new_db != current_db:
             active_setting.project.run_migration = True
 
         if {'AWS_ACCESS_KEY_ID', 'CLOUDINARY_STORAGE'} <= new_props.keys():

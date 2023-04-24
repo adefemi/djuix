@@ -1,4 +1,5 @@
 from app_controller.services.writer_main import WriterMain
+from project_controller.services.write_url import WriteProjectUrl
 
 class WriteToUrls(WriterMain):
     urls = []
@@ -29,6 +30,7 @@ class WriteToUrls(WriterMain):
         self.content_data += "]\n"
             
         self.write_to_file('url')    
+        WriteProjectUrl(self.app.project)
         
         
     def check_for_import(self):
