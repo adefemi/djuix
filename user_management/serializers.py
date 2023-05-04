@@ -12,7 +12,7 @@ class CreateUserSerializer(AuthSerializer):
 
 
 class VerifyUserSerializer(serializers.Serializer):
-    token = serializers.CharField()
+    reset_code = serializers.CharField()
 
 
 class ResentEmailSerializer(serializers.Serializer):

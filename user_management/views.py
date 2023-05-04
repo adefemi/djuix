@@ -104,7 +104,7 @@ class UpdatePasswordView(ModelViewSet):
         valid_request = self.serializer_class(data=request.data) if not is_register else VerifyUserSerializer(data=request.data)
         valid_request.is_valid(raise_exception=True)
         
-        token = valid_request.validated_data["token"]
+        token = valid_request.validated_data["reset_code"]
         
         try:
             current_time = timezone.now()
