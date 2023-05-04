@@ -51,7 +51,7 @@ def send_process_message(project_id, message, wait_sec=1, done=False):
 def send_verification_email(user, token):
     subject = "Welcome to Djuix.io"
     html_message = render_to_string("verification.html", {
-        'username': user.username,
+        'username': str(user.username).capitalize(),
         'verification_link': settings.EMAIL_VERIFICATION_LINK + f"?token={token}",
         'support_mail': support_mail,
         "app_email_name": app_email_name
@@ -63,7 +63,7 @@ def send_verification_email(user, token):
 def send_password_reset(user, token):
     subject = "Password reset request"
     html_message = render_to_string("forgot_password.html", {
-        'username': user.username,
+        'username': str(user.username).capitalize(),
         'reset_link': settings.PASSWORD_RESET_LINK + f"?token={token}",
         'support_mail': support_mail,
         "app_email_name": app_email_name
