@@ -14,7 +14,7 @@ def send_email(subject, html_msg, email):
     mail = EmailMessage(
         subject,
         html_msg,
-        f"Djuix Admin <{settings.EMAIL_HOST_USER}>",
+        f"Djuix.io <{settings.EMAIL_HOST_USER}>",
         [email],
     )
     mail.content_subtype = 'html'
