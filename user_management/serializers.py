@@ -13,7 +13,6 @@ class CreateUserSerializer(AuthSerializer):
 
 class VerifyUserSerializer(serializers.Serializer):
     token = serializers.CharField()
-    is_forget = serializers.BooleanField(required=False)
 
 
 class ResentEmailSerializer(serializers.Serializer):
@@ -21,8 +20,7 @@ class ResentEmailSerializer(serializers.Serializer):
     is_forget = serializers.BooleanField(required=False)
 
 
-class UpdatePasswordSerializer(serializers.Serializer):
-    user_id = serializers.CharField()
+class UpdatePasswordSerializer(VerifyUserSerializer):
     password = serializers.CharField()
     
 

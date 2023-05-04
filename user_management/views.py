@@ -98,18 +98,31 @@ class UpdatePasswordView(ModelViewSet):
     permission_classes = []
 
     def create(self, request):
-        valid_request = self.serializer_class(data=request.data)
+        data = self.request.query_params.dict()
+        is_register = data.pop("register", False)
+        
+        valid_request = self.serializer_class(data=request.data) if not is_register else VerifyUserSerializer(data=request.data)
         valid_request.is_valid(raise_exception=True)
+        
+        token = valid_request.validated_data["token"]
+        
+        try:
+            current_time = timezone.now()
+            v_user = VerificationUser.objects.get(token=token, expiry__gt=current_time)
+            
+        except Exception:
+            raise Exception("Provided token is either invalid or expired")
 
         user = CustomUser.objects.filter(
-            id=valid_request.validated_data["user_id"])
+            id=v_user.user.id)
 
         if not user:
             raise Exception("User with id not found")
 
         user = user[0]
 
-        user.set_password(valid_request.validated_data["password"])
+        if not is_register:
+            user.set_password(valid_request.validated_data["password"])
         user.is_verified = True
         user.save()
         
@@ -119,9 +132,7 @@ class UpdatePasswordView(ModelViewSet):
             pass
             
 
-        add_user_activity(user, "updated password")
-
-        return Response("User password updated")
+        return Response("User password updated" if not is_register else "User verification successful")
 
 
 class MeView(ModelViewSet):
