@@ -10,6 +10,7 @@ services:
     volumes:
       - .:/djuix
       - ${DJUIX_FILES}:/djuix-files
+      - ${DJUIX_DEPLOYS}:/djuix-deploys
     ports:
       - "8000:8000"
     env_file:
