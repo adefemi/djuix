@@ -18,12 +18,13 @@ class TestServerCreation:
             DirectoryManager.create_directory(self.project_deployment_path)
             
         self.copy_project_to_deploy()
+        self.push_docker_artifacts()
         
         
     def copy_project_to_deploy(self):
         # copy project folder excluding the env file to the deploy folder
         project_path = os.path.join(self.project.project_path, self.project.name)
-        shutil.copy(project_path, self.project_deployment_path)
+        shutil.copytree(project_path, self.project_deployment_path)
         self.project_path = os.path.join(self.project_deployment_path, self.project.name)
         
         
