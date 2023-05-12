@@ -23,14 +23,14 @@ class TestServerCreation:
         
     def copy_project_to_deploy(self):
         # copy project folder excluding the env file to the deploy folder
-        project_path = os.path.join(self.project.project_path, self.project.name)
+        project_path = os.path.join(self.project.project_path, self.project.formatted_name)
         shutil.copytree(project_path, self.project_deployment_path)
-        self.project_path = os.path.join(self.project_deployment_path, self.project.name)
+        self.project_path = os.path.join(self.project_deployment_path, self.project.formatted_name)
         
         
     def push_docker_artifacts(self):
         # push the dockerfile and the docker-compose artifact to the project folder
-        project_identity = "{}_{}".format(self.project.name, self.username)
+        project_identity = "{}_{}".format(self.project.formatted_name, self.username)
         
         dir_controller = DirectoryManager(self.project_path)
         dockerfile = dir_controller.create_file('/Dockerfile')
