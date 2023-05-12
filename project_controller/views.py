@@ -24,8 +24,10 @@ from rest_framework.response import Response
 from djuix.helper import Helper
 from djuix.functions import send_process_message
 from user_management.models import UserStatus
+from .models import TestServer
 
 from project_templates.blog.process import CreateBlogTemplate
+from .services.test_server_creation import TestServerCreation
 
 
 class ProjectView(ModelViewSet):
@@ -690,3 +692,32 @@ class DownloadProject(APIView):
         download_link = download_project(active_project)
 
         return Response({"link": download_link})
+    
+
+class StartTestServerView(APIView):
+    
+    def get(self, request, id):
+        try:
+            active_project = Project.objects.get(id=id)
+        except Exception:
+            raise Exception("project not found")
+        
+        if not active_project.has_migration:
+            raise Exception("project has not migrations yet and not ready for testing")
+        
+        default_port = 5000
+        try:
+            latest_test_server = TestServer.objects.latest('created_at')
+            port = latest_test_server.port + 1
+        except Exception as e:
+            port = default_port
+        test_server = TestServer.objects.create(project_id=active_project.id, port=port)
+        
+        try:
+            TestServerCreation(test_server.project, test_server.port)
+        except Exception as e:
+            test_server.delete()
+            
+        return Response({"message": "TestServer is running on"})
+        
+        

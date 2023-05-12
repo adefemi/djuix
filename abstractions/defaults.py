@@ -3,6 +3,7 @@ import enum
 
 
 DEFAULT_PROJECT_DIR="/djuix-files"
+DEFAULT_DEPLOY_DIR="/djuix-deploys"
 PROJECT_TEMPLATES = [
     {
         "name": "blog",
