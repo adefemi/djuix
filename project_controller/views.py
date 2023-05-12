@@ -717,6 +717,7 @@ class StartTestServerView(APIView):
             TestServerCreation(test_server.project, test_server.port)
         except Exception as e:
             test_server.delete()
+            raise Exception(e)
             
         return Response({"message": "TestServer is running on"})
         
