@@ -24,7 +24,7 @@ class TestServerCreation:
     def copy_project_to_deploy(self):
         # copy project folder excluding the env file to the deploy folder
         project_path = os.path.join(self.project.project_path, self.project.formatted_name)
-        shutil.copytree(project_path, self.project_deployment_path)
+        DirectoryManager.copy_directory_contents(project_path, self.project_deployment_path)
         self.project_path = os.path.join(self.project_deployment_path, self.project.formatted_name)
         
         
