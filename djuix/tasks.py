@@ -62,7 +62,7 @@ def remove_test_server(server_id):
     test_server_creation = TestServerCreation(test_server.project, test_server.port)
     
     try:
-        test_server_creation.destroy()
+        test_server_creation.deploy_down()
         test_server.delete()
     except Exception as e:
         capture_message(e)

@@ -20,7 +20,7 @@ class TestServerCreation:
         )
         self.project_identity = "{}_{}".format(self.project.formatted_name, self.username).replace("_", "-")
         
-    def setup(self):
+    def deploy(self):
         if not DirectoryManager.check_if_path_exist(self.project_deployment_path):
             DirectoryManager.create_directory(self.project_deployment_path)
         self.copy_project_to_deploy()
