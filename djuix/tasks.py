@@ -7,7 +7,7 @@ from .custom_methods import upload_folder_zip
 from controllers.directory_controller import DirectoryManager
 from abstractions.defaults import DEFAULT_PROJECT_DIR, TEST_SERVER_TIMEOUT
 import os
-from sentry_sdk import capture_exception
+from sentry_sdk import capture_message
 
 
 @shared_task
@@ -65,7 +65,7 @@ def remove_test_server(server_id):
         test_server_creation.destroy()
         test_server.delete()
     except Exception as e:
-        capture_exception(e)
+        capture_message(e)
         
 
 @shared_task
