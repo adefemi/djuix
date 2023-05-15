@@ -48,7 +48,8 @@ class TestServerCreation:
         
     def exec_script(self, script_path):
         command = [
-            "ssh", 
+            "ssh",
+            "-oStrictHostKeyChecking=no", 
             "-i", 
             "/root/.ssh/id_rsa", 
             "root@188.166.149.188", 
@@ -69,7 +70,7 @@ class TestServerCreation:
         
         self.exec_script(script_path)
         
-        return f"Server running at {self.project_identity}.api.djuix.io"
+        return f"{self.project_identity}.api.djuix.io"
     
     def deploy_down(self):
         script_path = os.path.join(DEFAULT_DEPLOY_DIR, "deploy_down.sh")

@@ -77,8 +77,9 @@ class TestServer(models.Model):
     project = models.OneToOneField(Project, related_name="project_test_server", on_delete=models.CASCADE)
     port = models.PositiveIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
+    ip = models.TextField(null=True)
     
     def __str__(self):
-        return f"{self.project.name} - {self.port}"
+        return f"{self.project.name} - {self.port} - {self.ip}"
     
     

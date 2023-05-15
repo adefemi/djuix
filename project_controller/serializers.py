@@ -3,6 +3,7 @@ from rest_framework import serializers
 from abstractions.defaults import AUTH_URLS
 from .models import Project, App, ProjectSettings, ProjectAuth
 from user_management.serializers import CustomUserSerializer
+from djuix.custom_methods import get_minutes_remaining
 
 
 class ProjectAuthSerializer(serializers.ModelSerializer):
@@ -42,10 +43,22 @@ class ProjectSerializer(serializers.ModelSerializer):
     owner = CustomUserSerializer(read_only=True)
     owner_id = serializers.CharField(write_only=True)
     project_auth = ProjectAuthSerializer(read_only=True)
+    test_server = serializers.SerializerMethodField("check_test_server", return_only=True)
 
     class Meta:
         model = Project
         fields = "__all__"
+        
+    def check_test_server(self, obj):
+        try:
+            test_server = obj.project_test_server
+        except Exception:
+            return None
+        
+        return {
+            "minutes_remaining": get_minutes_remaining(test_server.created_at),
+            "ip": test_server.ip
+        }
 
 
 class RunMigrationSerializer(serializers.Serializer):

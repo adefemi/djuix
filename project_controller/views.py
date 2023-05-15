@@ -716,6 +716,8 @@ class StartTestServerView(APIView):
         
         try:
             result = test_server_creation.setup()
+            test_server.ip = result
+            test_server.save()
         except Exception as e:
             test_server_creation.destroy()
             test_server.delete()
@@ -745,5 +747,31 @@ class StartTestServerView(APIView):
         test_server_creation = TestServerCreation(test_server.project, test_server.port)
         test_server_creation.destroy()
         test_server.delete()
+        
+
+class CloseTestServerView(APIView):
+    
+    def get(self, request, id):
+        test_server = self._get_test_server(id)
+        test_server_creation = TestServerCreation(test_server.project, test_server.port)
+        
+        try:
+            test_server_creation.destroy()
+            test_server.delete()
+        except Exception as e:
+            raise Exception(e)
+        
+        return Response({"message": "Test server closed"})
+    def _get_test_server(self, id):
+        try:
+            project = Project.objects.get(id=id)
+        except Project.DoesNotExist:
+            raise Exception("Project not found")
+        
+        try:
+            return project.project_test_server
+        except Project.DoesNotExist:
+            raise Exception("Project has no test server")
+    
         
         

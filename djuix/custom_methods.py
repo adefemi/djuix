@@ -8,6 +8,7 @@ import subprocess
 import boto3
 from django.conf import settings
 from abstractions.project_readme import readme_content
+from django.utils import timezone
 
 
 def custom_exception_handler(exc, context):
@@ -160,3 +161,18 @@ def download_project(project):
         HttpMethod="GET", ExpiresIn=3600)
     
     return download_link
+
+def get_minutes_remaining(created_at):
+    # get the current time
+    now = timezone.now()
+
+    # calculate the difference between now and the creation time
+    delta = now - created_at
+
+    # get the total seconds and convert to minutes
+    minutes_passed = delta.total_seconds() / 60
+
+    # calculate remaining minutes
+    minutes_remaining = 10 - minutes_passed
+
+    return minutes_remaining
