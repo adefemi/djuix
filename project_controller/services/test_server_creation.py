@@ -48,7 +48,7 @@ class TestServerCreation:
             ["/bin/bash", script_path, str(self.port), self.project_identity, self.project_path], 
             capture_output=True, text=True)
         
-        raise Exception("Output: {}".format(result.stdout))
+        print("Output: ", result.stdout)
         print("Errors: ", result.stderr)
         
     def deploy_up(self):
