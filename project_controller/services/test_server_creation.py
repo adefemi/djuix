@@ -45,7 +45,7 @@ class TestServerCreation:
         
     def exec_script(self, script_path):
         result = subprocess.run(
-            ["/bin/bash", script_path, self.port, self.project_identity, self.project_path], 
+            ["/bin/bash", script_path, str(self.port), self.project_identity, self.project_path], 
             capture_output=True, text=True)
         
         print("Output: ", result.stdout)
