@@ -723,7 +723,7 @@ class StartTestServerView(APIView):
             test_server.delete()
             raise Exception(e)
                 
-        remove_test_server.apply_async(args=[test_server.id], countdown=60) # 10 mins * 60 seconds
+        remove_test_server.apply_async(args=[test_server.id], countdown=TEST_SERVER_TIMEOUT) # 10 mins * 60 seconds
         return Response({"message": result})
 
     def _get_project(self, id):
