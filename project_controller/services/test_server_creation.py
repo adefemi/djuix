@@ -14,7 +14,7 @@ class TestServerCreation:
         self.username = project.owner.username
         self.project_deployment_path = os.path.join(DEFAULT_DEPLOY_DIR, self.username)
         self.project_path = os.path.join(self.project_deployment_path, self.project.formatted_name)
-        self.project_absolute_path = "djux.io/djuix_deploys/{}/{}".format(
+        self.project_absolute_path = "/root/djux.io/djuix_deploys/{}/{}".format(
             self.username,
             self.project.formatted_name
         )
