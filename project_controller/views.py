@@ -1,5 +1,8 @@
 from rest_framework.viewsets import ModelViewSet
-from abstractions.defaults import DEFAULT_PROJECT_DIR, OPTIONAL_PACKAGES, PACKAGE_LIST, UserStatuses
+from abstractions.defaults import (
+    DEFAULT_PROJECT_DIR, OPTIONAL_PACKAGES, PACKAGE_LIST, UserStatuses,
+    TEST_SERVER_TIMEOUT
+)
 from app_controller.models import ModelInfo
 from app_controller.services.write_view import WriteToView
 from controllers.directory_controller import DirectoryManager
@@ -28,6 +31,7 @@ from .models import TestServer
 
 from project_templates.blog.process import CreateBlogTemplate
 from .services.test_server_creation import TestServerCreation
+from djuix.tasks import remove_test_server
 
 
 class ProjectView(ModelViewSet):
@@ -717,6 +721,7 @@ class StartTestServerView(APIView):
             test_server.delete()
             raise Exception(e)
                 
+        remove_test_server.apply_async(args=[test_server.id], countdown=TEST_SERVER_TIMEOUT) # 10 mins * 60 seconds
         return Response({"message": result})
 
     def _get_project(self, id):

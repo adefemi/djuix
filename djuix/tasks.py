@@ -5,8 +5,9 @@ from django.utils import timezone
 from datetime import timedelta
 from .custom_methods import upload_folder_zip
 from controllers.directory_controller import DirectoryManager
-from abstractions.defaults import DEFAULT_PROJECT_DIR
+from abstractions.defaults import DEFAULT_PROJECT_DIR, TEST_SERVER_TIMEOUT
 import os
+from sentry_sdk import capture_exception
 
 
 @shared_task
@@ -47,3 +48,32 @@ def backup_project():
             # directory already deleted
             pass
         
+        
+@shared_task
+def remove_test_server(server_id):
+    from project_controller.services.test_server_creation import TestServerCreation
+    from project_controller.models import TestServer
+    
+    try:
+        test_server = TestServer.objects.get(id=server_id)
+    except TestServer.DoesNotExist:
+        return
+    
+    test_server_creation = TestServerCreation(test_server.project, test_server.port)
+    
+    try:
+        test_server_creation.destroy()
+        test_server.delete()
+    except Exception as e:
+        capture_exception(e)
+        
+
+@shared_task
+def delete_lingering_test_server():
+    from project_controller.models import TestServer
+    
+    expiry = timezone.now() - timedelta(seconds=TEST_SERVER_TIMEOUT)
+    test_servers = TestServer.objects.filter(created_at__lt=expiry)
+    
+    for test_server in test_servers:
+        remove_test_server(test_server.id)

@@ -20,8 +20,12 @@ def debug_task(self):
     
     
 app.conf.beat_schedule = {
-    'run-every-2-minutes': {
+    'backup-inactive-projects': {
         'task': 'djuix.tasks.backup_project',
-        'schedule': crontab(minute="*/2"),
+        'schedule': crontab(minute="*/30"),
+    },
+    'remove-lingering-test-servers':{
+        'task': 'djuix.tasks.delete_lingering_test_server',
+        'schedule': crontab(minute="*/10"),
     }
 }
