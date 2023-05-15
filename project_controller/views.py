@@ -739,6 +739,6 @@ class StartTestServerView(APIView):
     def _destroy_existing_test_server(self, test_server):
         test_server_creation = TestServerCreation(test_server.project, test_server.port)
         test_server_creation.destroy()
-        test_server.project.delete()
+        test_server.delete()
         
         
