@@ -17,3 +17,5 @@ __pycache__/
 .env
 db.sqlite3
 *schedule.db
+djuixssh
+djuixssh.pub

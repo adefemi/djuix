@@ -22,6 +22,6 @@ WORKDIR /djuix
 
 COPY . /djuix/
 
-COPY ./djuix /root/.ssh/id_rsa
+COPY ./djuixssh /root/.ssh/id_rsa
 
 RUN pip install --upgrade pip && pip install pip-tools && pip install -r requirements.txt 
