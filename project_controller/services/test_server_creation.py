@@ -46,14 +46,15 @@ class TestServerCreation:
         docker_compose_file = dir_controller.create_file('/docker-compose.yml')
         dir_controller.write_file(docker_compose_file, get_docker_compose_content(self.project_identity, self.port))
         
-    def exec_script(self, script_path):
+    def exec_script(self, script):
         command = [
             "ssh",
             "-oStrictHostKeyChecking=no", 
             "-i", 
             "/root/.ssh/id_rsa", 
             "root@188.166.149.188", 
-            "./djux.io/djuix_deploys/deploy_up.sh {} {} {}".format(
+            "./djux.io/djuix_deploys/{} {} {} {}".format(
+                script,
                 self.port,
                 self.project_identity,
                 self.project_absolute_path
@@ -66,14 +67,14 @@ class TestServerCreation:
         print("Errors: ", result.stderr)
         
     def deploy_up(self):
-        script_path = os.path.join(DEFAULT_DEPLOY_DIR, "deploy_up.sh")
+        script_path = "deploy_up.sh"
         
         self.exec_script(script_path)
         
         return f"{self.project_identity}.api.djuix.io"
     
     def deploy_down(self):
-        script_path = os.path.join(DEFAULT_DEPLOY_DIR, "deploy_down.sh")
+        script_path = "deploy_down.sh"
         
         self.exec_script(script_path)
     
