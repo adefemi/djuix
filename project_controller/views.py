@@ -697,30 +697,16 @@ class DownloadProject(APIView):
 class StartTestServerView(APIView):
     
     def get(self, request, id):
-        try:
-            active_project = Project.objects.get(id=id)
-        except Exception:
-            raise Exception("project not found")
-        
-        if not active_project.has_migration:
-            raise Exception("project has not migrations yet and not ready for testing")
+        active_project = self._get_project(id)
+        self._check_project_migration(active_project)
         
         default_port = 5000
-        try:
-            latest_test_server = TestServer.objects.latest('created_at')
-            port = latest_test_server.port + 1
-        except Exception as e:
-            port = default_port
-            
+        port = self._get_next_available_port(default_port)
+
         project_test_server = TestServer.objects.filter(project_id=active_project.id)
-        has_test_server = len(project_test_server) > 0
-        
-        if has_test_server:
-            active_server = project_test_server[0]
-            test_server_creation = TestServerCreation(active_server.project, active_server.port)
-            test_server_creation.destroy()
-            active_server.project.delete()
-        
+        if project_test_server.exists():
+            self._destroy_existing_test_server(project_test_server.first())
+
         test_server = TestServer.objects.create(project_id=active_project.id, port=port)
         test_server_creation = TestServerCreation(test_server.project, test_server.port)
         
@@ -730,7 +716,29 @@ class StartTestServerView(APIView):
             test_server_creation.destroy()
             test_server.delete()
             raise Exception(e)
-            
+                
         return Response({"message": result})
+
+    def _get_project(self, id):
+        try:
+            return Project.objects.get(id=id)
+        except Project.DoesNotExist:
+            raise Exception("Project not found")
+
+    def _check_project_migration(self, project):
+        if not project.has_migration:
+            raise Exception("Project has no migrations yet and not ready for testing")
+
+    def _get_next_available_port(self, default_port):
+        try:
+            latest_test_server = TestServer.objects.latest('created_at')
+            return latest_test_server.port + 1
+        except TestServer.DoesNotExist:
+            return default_port
+
+    def _destroy_existing_test_server(self, test_server):
+        test_server_creation = TestServerCreation(test_server.project, test_server.port)
+        test_server_creation.destroy()
+        test_server.project.delete()
         
         
