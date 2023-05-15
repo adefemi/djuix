@@ -14,6 +14,10 @@ class TestServerCreation:
         self.username = project.owner.username
         self.project_deployment_path = os.path.join(DEFAULT_DEPLOY_DIR, self.username)
         self.project_path = os.path.join(self.project_deployment_path, self.project.formatted_name)
+        self.project_absolute_path = "djux.io/djuix_deploys/{}/{}".format(
+            self.username,
+            self.project.formatted_name
+        )
         self.project_identity = "{}_{}".format(self.project.formatted_name, self.username)
         
         if not DirectoryManager.check_if_path_exist(self.project_deployment_path):
@@ -44,9 +48,19 @@ class TestServerCreation:
         dir_controller.write_file(docker_compose_file, get_docker_compose_content(self.project_identity, self.port))
         
     def exec_script(self, script_path):
-        result = subprocess.run(
-            ["/bin/bash", script_path, str(self.port), self.project_identity, self.project_path], 
-            capture_output=True, text=True)
+        command = [
+            "ssh", 
+            "-i", 
+            "/root/.ssh/id_rsa", 
+            "root@188.166.149.188", 
+            "./djux.io/djuix_deploys/deploy_up.sh {} {} {}".format(
+                self.port,
+                self.project_identity,
+                self.project_absolute_path
+            )
+        ]
+        
+        result = subprocess.run(command, capture_output=True, text=True)
         
         print("Output: ", result.stdout)
         print("Errors: ", result.stderr)
