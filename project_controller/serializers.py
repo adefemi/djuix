@@ -43,7 +43,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     owner = CustomUserSerializer(read_only=True)
     owner_id = serializers.CharField(write_only=True)
     project_auth = ProjectAuthSerializer(read_only=True)
-    test_server = serializers.SerializerMethodField("check_test_server", return_only=True)
+    test_server = serializers.SerializerMethodField("check_test_server", read_only=True)
 
     class Meta:
         model = Project
