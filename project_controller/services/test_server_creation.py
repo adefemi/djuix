@@ -20,10 +20,9 @@ class TestServerCreation:
         )
         self.project_identity = "{}_{}".format(self.project.formatted_name, self.username).replace("_", "-")
         
+    def setup(self):
         if not DirectoryManager.check_if_path_exist(self.project_deployment_path):
             DirectoryManager.create_directory(self.project_deployment_path)
-        
-    def setup(self):
         self.copy_project_to_deploy()
         self.push_docker_artifacts()
         return self.deploy_up()
