@@ -700,12 +700,12 @@ class StartTestServerView(APIView):
         active_project = self._get_project(id)
         self._check_project_migration(active_project)
         
-        default_port = 5000
-        port = self._get_next_available_port(default_port)
-
         project_test_server = TestServer.objects.filter(project_id=active_project.id)
         if project_test_server.exists():
             self._destroy_existing_test_server(project_test_server.first())
+        
+        default_port = 5000
+        port = self._get_next_available_port(default_port)
 
         test_server = TestServer.objects.create(project_id=active_project.id, port=port)
         test_server_creation = TestServerCreation(test_server.project, test_server.port)

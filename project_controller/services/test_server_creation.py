@@ -18,7 +18,7 @@ class TestServerCreation:
             self.username,
             self.project.formatted_name
         )
-        self.project_identity = "{}_{}".format(self.project.formatted_name, self.username)
+        self.project_identity = "{}_{}".format(self.project.formatted_name, self.username).replace("_", "-")
         
         if not DirectoryManager.check_if_path_exist(self.project_deployment_path):
             DirectoryManager.create_directory(self.project_deployment_path)
@@ -35,7 +35,6 @@ class TestServerCreation:
     def copy_project_to_deploy(self):
         # copy project folder excluding the env file to the deploy folder
         project_path = os.path.join(self.project.project_path, self.project.formatted_name)
-        self.project_path = os.path.join(self.project_deployment_path, self.project.formatted_name)
         shutil.copytree(project_path, self.project_path)
         
     def push_docker_artifacts(self):
