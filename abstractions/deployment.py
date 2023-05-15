@@ -6,7 +6,7 @@ WORKDIR /{}
 
 COPY . /{}/
 
-RUN pip install requirements.txt
+RUN pip install -r requirements.txt
 """
 
 def get_dockerfile_content(project_identity):

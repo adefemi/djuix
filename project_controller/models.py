@@ -74,7 +74,7 @@ class ProjectAuth(models.Model):
         return f"{self.project.name} auth"
     
 class TestServer(models.Model):
-    project = models.OneToOneField(Project, related_name="project_test_server", on_delete=models.CASCADE)
+    project = models.OneToOneField(Project, related_name="project_test_server", on_delete=models.CASCADE, unique=True)
     port = models.PositiveIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     
