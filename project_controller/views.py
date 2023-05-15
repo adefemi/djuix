@@ -712,16 +712,22 @@ class StartTestServerView(APIView):
         except Exception as e:
             port = default_port
             
-        test_server_creation = TestServerCreation(test_server.project, test_server.port)
+        project_test_server = TestServer.objects.filter(project_id=active_project.id)
+        has_test_server = len(project_test_server) > 0
         
-        try:
-            test_server = TestServer.objects.create(project_id=active_project.id, port=port)
-        except Exception as e:
+        if has_test_server:
+            active_server = project_test_server[0]
+            test_server_creation = TestServerCreation(active_server.project, active_server.port)
             test_server_creation.destroy()
+            active_server.project.delete()
+        
+        test_server = TestServer.objects.create(project_id=active_project.id, port=port)
+        test_server_creation = TestServerCreation(test_server.project, test_server.port)
         
         try:
             result = test_server_creation.setup()
         except Exception as e:
+            test_server_creation.destroy()
             test_server.delete()
             raise Exception(e)
             

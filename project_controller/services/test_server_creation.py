@@ -25,7 +25,6 @@ class TestServerCreation:
         return self.deploy_up()
         
     def destroy(self):
-        self.project.project_test_server.delete()
         self.deploy_down()
         
         
