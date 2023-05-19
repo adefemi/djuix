@@ -7,7 +7,6 @@ from .custom_methods import upload_folder_zip
 from controllers.directory_controller import DirectoryManager
 from abstractions.defaults import DEFAULT_PROJECT_DIR, TEST_SERVER_TIMEOUT
 import os
-from sentry_sdk import capture_message
 
 
 @shared_task
@@ -51,7 +50,7 @@ def backup_project():
         
 @shared_task
 def remove_test_server(server_id):
-    from project_controller.services.test_server_creation import TestServerCreation
+    from project_controller.services.test_server_creation import close_test_server
     from project_controller.models import TestServer
     
     try:
@@ -59,13 +58,8 @@ def remove_test_server(server_id):
     except TestServer.DoesNotExist:
         return
     
-    test_server_creation = TestServerCreation(test_server.project, test_server.port)
+    close_test_server(test_server)
     
-    try:
-        test_server_creation.deploy_down()
-        test_server.delete()
-    except Exception as e:
-        capture_message(e)
         
 
 @shared_task

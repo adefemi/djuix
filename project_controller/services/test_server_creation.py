@@ -1,6 +1,7 @@
 from controllers.directory_controller import DirectoryManager
 import shutil
 import subprocess
+from sentry_sdk import capture_message
 
 from abstractions.defaults import DEFAULT_DEPLOY_DIR
 from abstractions.deployment import get_docker_compose_content, get_dockerfile_content
@@ -76,5 +77,15 @@ class TestServerCreation:
         script_path = "deploy_down.sh"
         
         self.exec_script(script_path)
+        
+
+def close_test_server(test_server):
+    test_server_creation = TestServerCreation(test_server.project, test_server.port)
+    
+    try:
+        test_server_creation.deploy_down()
+        test_server.delete()
+    except Exception as e:
+        capture_message(e)
     
     
