@@ -30,6 +30,20 @@ class Project(models.Model):
         self.slug = slugify(self.name)
         super().save(*args, **kwargs)
         
+    def delete(self, *args, **kwargs):
+        # delete test server if it exists
+        try:
+            test_server = self.project_test_server
+            from djuix.tasks import remove_test_server
+            remove_test_server(test_server.id)
+        except Exception as e:
+            from sentry_sdk import capture_message
+            capture_message(e)
+            # no test server
+            pass
+        
+        super().delete(*args, **kwargs)
+        
 
 class ProjectSettings(models.Model):
     
