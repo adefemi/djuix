@@ -54,6 +54,12 @@ def download_zip(folder_parent_path, folder_name, file_name):
     with open(extract_folder, 'wb') as f:
         f.write(contents)
         
+    # remove existing folder if it exists
+    try:
+        subprocess.run(["rm", "-r", working_dir])
+    except Exception:
+        pass
+        
     subprocess.run(["mkdir", working_dir])
     subprocess.call(["unzip", "-o", extract_folder, '-d', working_dir])
     
