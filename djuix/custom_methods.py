@@ -172,10 +172,7 @@ def get_minutes_remaining(time_sec, created_at):
     # calculate the difference between now and the creation time
     delta = timezone.now() - created_at
 
-    # get the total seconds and convert to minutes
-    minutes_passed = delta.total_seconds() / 60
-
     # calculate remaining minutes
-    minutes_remaining = time_sec/60 - minutes_passed
+    minutes_remaining = time_sec - delta.total_seconds()
 
-    return minutes_remaining
+    return minutes_remaining/60
