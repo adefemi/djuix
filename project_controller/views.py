@@ -1,7 +1,6 @@
 from rest_framework.viewsets import ModelViewSet
 from abstractions.defaults import (
-    DEFAULT_PROJECT_DIR, OPTIONAL_PACKAGES, PACKAGE_LIST, UserStatuses,
-    TEST_SERVER_TIMEOUT
+    DEFAULT_PROJECT_DIR, OPTIONAL_PACKAGES, PACKAGE_LIST, UserStatuses
 )
 from app_controller.models import ModelInfo
 from app_controller.services.write_view import WriteToView
@@ -32,6 +31,8 @@ from .models import TestServer
 from project_templates.blog.process import CreateBlogTemplate
 from .services.test_server_creation import TestServerCreation
 from djuix.tasks import remove_test_server
+from django.utils import timezone
+from datetime import timedelta
 
 
 class ProjectView(ModelViewSet):
@@ -711,7 +712,12 @@ class StartTestServerView(APIView):
         default_port = 5000
         port = self._get_next_available_port(default_port)
 
-        test_server = TestServer.objects.create(project_id=active_project.id, port=port)
+        test_server = TestServer.objects.create(
+            project_id=active_project.id, 
+            port=port,
+            expiry=timezone.now() + timedelta(seconds=active_project.owner.test_server_timeout)
+        )
+        
         test_server_creation = TestServerCreation(test_server.project, test_server.port)
         
         try:
@@ -723,7 +729,7 @@ class StartTestServerView(APIView):
             test_server.delete()
             raise Exception(e)
                 
-        remove_test_server.apply_async(args=[test_server.id], countdown=TEST_SERVER_TIMEOUT) # 10 mins * 60 seconds
+        remove_test_server.apply_async(args=[test_server.id], countdown=test_server.project.owner.test_server_timeout) 
         return Response({"message": result})
 
     def _get_project(self, id):

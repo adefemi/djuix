@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.text import slugify
+from django.utils import timezone
 
 from abstractions.defaults import DEFAULT_PROJECT_DIR
 from user_management.models import CustomUser
@@ -87,6 +88,7 @@ class ProjectAuth(models.Model):
 class TestServer(models.Model):
     project = models.OneToOneField(Project, related_name="project_test_server", on_delete=models.CASCADE)
     port = models.PositiveIntegerField()
+    expiry = models.DateTimeField(default=timezone.now)
     created_at = models.DateTimeField(auto_now_add=True)
     ip = models.TextField(null=True)
     

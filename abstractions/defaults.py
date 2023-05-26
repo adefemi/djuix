@@ -4,7 +4,6 @@ import enum
 
 DEFAULT_PROJECT_DIR="/djuix-files"
 DEFAULT_DEPLOY_DIR="/djuix-deploys"
-TEST_SERVER_TIMEOUT = 600 # 10mins in seconds
 PROJECT_TEMPLATES = [
     {
         "name": "blog",

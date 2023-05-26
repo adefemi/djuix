@@ -5,7 +5,9 @@ from django.utils import timezone
 from datetime import timedelta
 from .custom_methods import upload_folder_zip
 from controllers.directory_controller import DirectoryManager
-from abstractions.defaults import DEFAULT_PROJECT_DIR, TEST_SERVER_TIMEOUT
+from abstractions.defaults import DEFAULT_PROJECT_DIR
+from django.db.models import F
+from django.db import transaction
 import os
 
 
@@ -65,9 +67,12 @@ def remove_test_server(server_id):
 @shared_task
 def delete_lingering_test_server():
     from project_controller.models import TestServer
+    # get test servers
     
-    expiry = timezone.now() - timedelta(seconds=TEST_SERVER_TIMEOUT)
-    test_servers = TestServer.objects.filter(created_at__lt=expiry)
+    expired_test_servers = TestServer.objects.filter(
+        expiry__lt=timezone.now()
+    )
     
-    for test_server in test_servers:
-        remove_test_server(test_server.id)
+    with transaction.atomic():
+        for test_server in expired_test_servers.iterator():
+            remove_test_server(test_server.id)
