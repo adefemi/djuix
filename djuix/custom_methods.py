@@ -168,17 +168,14 @@ def download_project(project):
     
     return download_link
 
-def get_minutes_remaining(created_at):
-    # get the current time
-    now = timezone.now()
-
+def get_minutes_remaining(time_sec, created_at):
     # calculate the difference between now and the creation time
-    delta = now - created_at
+    delta = timezone.now() - created_at
 
     # get the total seconds and convert to minutes
     minutes_passed = delta.total_seconds() / 60
 
     # calculate remaining minutes
-    minutes_remaining = 10 - minutes_passed
+    minutes_remaining = time_sec - minutes_passed
 
     return minutes_remaining

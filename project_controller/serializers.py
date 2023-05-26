@@ -56,7 +56,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             return None
         
         return {
-            "minutes_remaining": get_minutes_remaining(test_server.created_at),
+            "minutes_remaining": get_minutes_remaining(obj.owner.test_server_timeout, test_server.created_at),
             "ip": test_server.ip
         }
 
