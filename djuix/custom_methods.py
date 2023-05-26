@@ -176,6 +176,6 @@ def get_minutes_remaining(time_sec, created_at):
     minutes_passed = delta.total_seconds() / 60
 
     # calculate remaining minutes
-    minutes_remaining = time_sec - minutes_passed
+    minutes_remaining = time_sec/60 - minutes_passed
 
     return minutes_remaining
