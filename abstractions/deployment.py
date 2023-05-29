@@ -17,19 +17,14 @@ docker_compose_content = """version: '3'
 services:
   web:
     build: .
-    command: bash -c "python manage.py runserver 0.0.0.0:{}"
+    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:{}"
     container_name: {}
     restart: always
     volumes:
       - .:/{}
     ports:
       - "{}:{}"
-    networks:
-      - {}Net
 
-networks:
-  {}Net:
-    driver: bridge
 """
 
 def get_docker_compose_content(project_identity, port):
