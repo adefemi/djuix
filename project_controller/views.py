@@ -13,6 +13,7 @@ from project_controller.services.write_url import WriteProjectUrl
 from .services.write_settings_file import WriteSettings
 from rest_framework.views import APIView
 import os
+import time
 
 from project_controller.services.write_utils import WriteUtils
 
@@ -730,6 +731,7 @@ class StartTestServerView(APIView):
             raise Exception(e)
                 
         remove_test_server.apply_async(args=[test_server.id], countdown=test_server.project.owner.test_server_timeout) 
+        time.sleep(10)
         return Response({"message": result})
 
     def _get_project(self, id):
