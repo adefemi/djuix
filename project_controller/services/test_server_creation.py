@@ -19,6 +19,7 @@ class TestServerCreation:
             self.username,
             self.project.formatted_name
         )
+        self.project_name = self.project.formatted_name
         self.project_identity = "{}_{}".format(self.project.formatted_name, self.username).replace("_", "-")
         
     def deploy(self):
@@ -53,11 +54,12 @@ class TestServerCreation:
             "-i", 
             "/root/.ssh/id_rsa", 
             "root@188.166.149.188", 
-            "./djux.io/djuix_deploys/{} {} {} {}".format(
+            "./djux.io/djuix_deploys/{} {} {} {} {}".format(
                 script,
                 self.port,
                 self.project_identity,
-                self.project_absolute_path
+                self.project_absolute_path,
+                self.project_name
             )
         ]
         
