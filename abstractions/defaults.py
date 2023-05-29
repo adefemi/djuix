@@ -352,6 +352,11 @@ MODEL_REQUIREMENT = {
                 "type": "options", 
                 "name": "Field Reference",
                 "instruction": "get_field_references"
+            },
+            "max_length": {
+                "type": "integer",
+                "name": "Maximum length",
+                "placeholder": "The maximum length of the field"
             }
         }
     },
