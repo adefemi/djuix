@@ -225,6 +225,7 @@ class ViewInfoView(ModelViewSet):
             field_properties, normalized_data, active_model)
         self.handle_top_content(field_properties, normalized_data)
         self.handle_implement_search(field_properties, normalized_data)
+        self.handle_allow_filter(field_properties, normalized_data)
         if can_create:
             self.override_create(active_serializer, field_properties)
         if can_update:
@@ -239,6 +240,12 @@ class ViewInfoView(ModelViewSet):
         implement_search = request_obj.get("implement_search", None)
         if implement_search:
             field_obj["implement_search"] = implement_search
+            
+    @staticmethod
+    def handle_allow_filter(field_obj, request_obj):
+        allowFilter = request_obj.get("allowFilter", False)
+        if allowFilter:
+            field_obj["allowFilter"] = allowFilter
 
     @staticmethod
     def override_create(active_serializer, field_obj):
