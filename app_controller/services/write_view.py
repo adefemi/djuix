@@ -208,11 +208,11 @@ class WriteToView(WriterMain):
         
         if not self.implemented_queryset:
             self.content_data += f"\n\tdef get_queryset(self):\n"
-        else:
-            self.content_data += "\n"
             
-        self.content_data += f"\t\tif self.request.method.lower() != 'get':\n"
-        self.content_data += f"\t\t\treturn self.queryset\n"
+        if not search_key:
+            self.content_data += "\n"
+            self.content_data += f"\t\tif self.request.method.lower() != 'get':\n"
+            self.content_data += f"\t\t\treturn self.queryset\n"
         
         self.content_data += f"\n\t\tfilter_params = self.request.query_params.dict()\n"
         if search_key:
