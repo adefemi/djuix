@@ -36,6 +36,8 @@ class WriteToView(WriterMain):
             if field_properties.get("get_similar_content", None) is not None:
                 self.implement_get_similar_content(field_properties["get_similar_content"])
                 
+            if field_properties.get("allowFilter", None) is not None:
+                self.implement_allow_filter(field_properties.get("implement_search", None))
             
                 
             if self.implemented_queryset:
@@ -197,6 +199,31 @@ class WriteToView(WriterMain):
         self.content_data += f"\t\t\tsearch_fields = {search_fields}\n"
         self.content_data += f"\t\t\tquery = get_query({search_key}, search_fields)\n"
         self.content_data += f"\t\t\tresults = results.filter(query)\n"
+        
+        self.implemented_queryset = True
+        
+    def implement_allow_filter(self, obj, view):
+        print("writing implement allow filter")
+        search_key = None if not obj else obj.get("search_key", None)
+        
+        if not self.implemented_queryset:
+            self.content_data += f"\n\tdef get_queryset(self):\n"
+            
+        if not search_key:
+            self.content_data += "\n"
+            self.content_data += f"\t\tif self.request.method.lower() != 'get':\n"
+            self.content_data += f"\t\t\treturn self.queryset\n"
+        
+        self.content_data += f"\n\t\tfilter_params = self.request.query_params.dict()\n"
+        if search_key:
+            self.content_data += f"\n\t\t# Remove search key from considerable fields\n"
+            self.content_data += f"\t\tif '{search_key}' in filter_params:\n"
+            self.content_data += f"\t\t\tdel filter_params['{search_key}']\n"
+            
+        self.content_data += f"\n\t\ttry:\n"    
+        self.content_data += f"\t\t\tresults = self.queryset.filter(**filter_params)\n"
+        self.content_data += f"\n\t\texcept Exception as e:\n"  
+        self.content_data += f"\t\t\traise Exception(e)\n"
         
         self.implemented_queryset = True
         
