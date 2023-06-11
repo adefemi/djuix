@@ -28,7 +28,7 @@ class WriteToView(WriterMain):
             self.define_view_attrs(field_properties, view)
             
             if field_properties.get("implement_search", None) is not None:
-                self.implement_search(field_properties["implement_search"], view)
+                self.implement_search(field_properties["implement_search"])
                 
             if field_properties.get("get_top_content", None) is not None:
                 self.implement_get_top_content(field_properties["get_top_content"])
@@ -176,7 +176,7 @@ class WriteToView(WriterMain):
         self.content_data += f"\n\t\treturn Response({result}, 201)\n"
         
     
-    def implement_search(self, obj, view):
+    def implement_search(self, obj):
         print("writing implement_search")
         search_key = obj["search_key"]
         search_fields = obj["search_fields"]
@@ -202,7 +202,7 @@ class WriteToView(WriterMain):
         
         self.implemented_queryset = True
         
-    def implement_allow_filter(self, obj, view):
+    def implement_allow_filter(self, obj):
         print("writing implement allow filter")
         search_key = None if not obj else obj.get("search_key", None)
         
