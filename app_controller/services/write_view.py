@@ -30,14 +30,14 @@ class WriteToView(WriterMain):
             if field_properties.get("implement_search", None) is not None:
                 self.implement_search(field_properties["implement_search"])
                 
+            if field_properties.get("allowFilter", None) is not None:
+                self.implement_allow_filter(field_properties.get("implement_search", None))
+                
             if field_properties.get("get_top_content", None) is not None:
                 self.implement_get_top_content(field_properties["get_top_content"])
                 
             if field_properties.get("get_similar_content", None) is not None:
                 self.implement_get_similar_content(field_properties["get_similar_content"])
-                
-            if field_properties.get("allowFilter", None) is not None:
-                self.implement_allow_filter(field_properties.get("implement_search", None))
             
                 
             if self.implemented_queryset:
