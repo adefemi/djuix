@@ -104,9 +104,9 @@ docker-compose build
 docker-compose up -d
 """
     
-    delete_folder_if_exists('start_server.sh', project_path)
+    delete_folder_if_exists('start-server.sh', project_path)
     
-    start_server_file = dir_controller.create_file('/start_server.sh')
+    start_server_file = dir_controller.create_file('/start-server.sh')
     dir_controller.write_file(start_server_file, start_server_content)
     
     # push docker artifacts
