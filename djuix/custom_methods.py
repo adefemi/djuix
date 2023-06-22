@@ -7,6 +7,7 @@ import os
 import subprocess
 import boto3
 from django.conf import settings
+from abstractions.deployment import get_docker_compose_content, get_dockerfile_content
 from abstractions.project_readme import readme_content
 from django.utils import timezone
 
@@ -69,22 +70,25 @@ def download_zip(folder_parent_path, folder_name, file_name):
         pass
     default_storage.delete(file_location)
     
-    
-def setup_for_download(project):
-    
+
+def delete_folder_if_exists(name, default_path):
     from controllers.directory_controller import DirectoryManager
-    from controllers.terminal_controller import TerminalController
-    
-    # create .sh script to start server
-    # create .sh script to create super admin
-    dir_controller = DirectoryManager(project.project_path)
-    term_controller = TerminalController("", project)
-    
-    file_path = os.path.join(project.project_path, 'Readme.md')
+    file_path = os.path.join(default_path, name)
     try:
         DirectoryManager.delete_file(file_path)
     except Exception:
         pass
+    
+def setup_for_download(project):
+    
+    from controllers.directory_controller import DirectoryManager
+    
+    # create .sh script to start server
+    
+    project_path = os.path.join(project.project_path, project.formatted_name)
+    dir_controller = DirectoryManager(project_path)
+    
+    delete_folder_if_exists('Readme.md', project_path)
     
     start_server_file = dir_controller.create_file('/Readme.md')
     dir_controller.write_file(start_server_file, readme_content)
@@ -93,67 +97,41 @@ def setup_for_download(project):
     start_server_content = f"""
 #!/bin/bash
         
-# Activate the virtual environment
-source {term_controller.get_env()}/bin/activate
-        
-# Charge to the directory where the Django project is located
-cd {term_controller.project_name}
+# Build Project
+docker-compose build
 
-pip3 install -r requirements.txt
-
-python3 manage.py migrate
-        
-# Start the Django development server
-python3 manage.py runserver
-    """
+# Start Server
+docker-compose up -d
+"""
     
-    file_path = os.path.join(project.project_path, 'start_server.sh')
-    try:
-        DirectoryManager.delete_file(file_path)
-    except Exception:
-        pass
+    delete_folder_if_exists('start_server.sh', project_path)
     
     start_server_file = dir_controller.create_file('/start_server.sh')
     dir_controller.write_file(start_server_file, start_server_content)
     
+    # push docker artifacts
+    delete_folder_if_exists('Dockerfile', project_path)
     
-    create_super_admin_content = f"""
-#!/bin/bash
-        
-# Activate the virtual environment
-source {term_controller.get_env()}/bin/activate
-        
-# Charge to the directory where the Django project is located
-cd {term_controller.project_name}
-
-pip3 install -r requirements.txt
-
-python3 manage.py migrate
-        
-# Start the Django development server
-python3 manage.py createsuperuser
-    """
+    dockerfile = dir_controller.create_file('/Dockerfile')
+    dir_controller.write_file(dockerfile, get_dockerfile_content(project.formatted_name))
     
-    file_path = os.path.join(project.project_path, 'create_super_admin.sh')
-    try:
-        DirectoryManager.delete_file(file_path)
-    except Exception:
-        pass
+    delete_folder_if_exists('docker-compose.yml', project_path)
     
-    create_super_admin_file = dir_controller.create_file('/create_super_admin.sh')
-    dir_controller.write_file(create_super_admin_file, create_super_admin_content)
+    docker_compose_file = dir_controller.create_file('/docker-compose.yml')
+    dir_controller.write_file(docker_compose_file, get_docker_compose_content(project.formatted_name, 8000))
+    
     
 def download_project(project):
     from controllers.terminal_controller import TerminalController
+
     
-    username = project.owner.username
-    term_controller = TerminalController("", project)
+    project_path = os.path.join(project.project_path, project.formatted_name)
     
-    project_name = term_controller.define_project_standard_name()
+    project_name = project.formatted_name
     object_name = f"{project_name}.zip"
-    zip_filename = project.project_path + ".zip"
+    zip_filename = project_path + ".zip"
     
-    shutil.make_archive(project.project_path, 'zip', project.project_path)
+    shutil.make_archive(project_path, 'zip', project_path)
     
     default_storage.save(os.path.join("downloads", object_name), open(zip_filename, 'rb'))
     
