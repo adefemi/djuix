@@ -26,7 +26,7 @@ To start the Django server, run the following command in the terminal:
 ./start_server.sh
 ```
 
-This script builds the project by run `docker-compose build` then starts the server by running `docker-compose up -d`, the `-d` signifies detach mode.
+This script builds the project by running `docker-compose build` then starts the server by running `docker-compose up -d`, the `-d` signifies detach mode.
 
 ## Troubleshooting
 
