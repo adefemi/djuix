@@ -681,7 +681,6 @@ class LoadProject(ModelViewSet):
             active_user.save()
         return Response("Loaded successfully")
 
-
 class DownloadProject(APIView):
 
     def get(self, request, id):

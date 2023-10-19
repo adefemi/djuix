@@ -150,10 +150,6 @@ class TerminalController(CommandTemplate):
 
     def install_packages(self, my_packages=PACKAGE_LIST, send_socket=True):
         if send_socket:
-            send_process_message(self.active_user, "Updating pip...", 0)
-
-        self.update_pip()
-        if send_socket:
             send_process_message(
                 self.active_user, "installing required packages...", 0)
 
