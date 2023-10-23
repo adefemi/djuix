@@ -58,7 +58,7 @@ class TerminalController(CommandTemplate):
         self.create_project_folder()
         self.create_env()
         if self.active_user:
-            self.install_packages()
+            self.install_packages(new_project=True)
 
         command = 'django-admin startproject'
 
@@ -148,7 +148,7 @@ class TerminalController(CommandTemplate):
         print("created virtual env")
         return True
 
-    def install_packages(self, my_packages=PACKAGE_LIST, send_socket=True):
+    def install_packages(self, my_packages=PACKAGE_LIST, send_socket=True, new_project=False):
         if send_socket:
             send_process_message(
                 self.active_user, "installing required packages...", 0)
@@ -163,6 +163,9 @@ class TerminalController(CommandTemplate):
         package_string_list = ""
         for package in packages_to_use:
             package_string_list += package["version"] + " "
+
+        if new_project:
+            self.update_pip()
 
         command = "pip install"
         command_template = self.get_access_template(
